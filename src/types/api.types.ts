@@ -145,6 +145,7 @@ export interface ActualizarRestauranteDto {
   mostrarMenu?: boolean;
   mostrarEnlaces?: boolean;
   mostrarContacto?: boolean;
+  habilitarPedidos?: boolean;
   direccion?: string;
   ciudad?: string;
   estadoProvincia?: string;

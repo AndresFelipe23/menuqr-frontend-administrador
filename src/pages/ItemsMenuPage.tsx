@@ -13,8 +13,6 @@ import {
   Loader2,
   AlertCircle,
   CheckCircle2,
-  GripVertical,
-  Image as ImageIcon,
   DollarSign,
   Clock,
   Leaf,
@@ -38,7 +36,7 @@ export default function ItemsMenuPage() {
   const [editingItem, setEditingItem] = useState<ItemMenuConAdiciones | null>(null);
   const [filtroCategoria, setFiltroCategoria] = useState<string>('');
 
-  const [formData, setFormData] = useState<CrearItemMenuDto & ActualizarItemMenuDto>({
+  const [formData, setFormData] = useState<Partial<CrearItemMenuDto & ActualizarItemMenuDto>>({
     categoriaId: '',
     nombre: '',
     descripcion: '',

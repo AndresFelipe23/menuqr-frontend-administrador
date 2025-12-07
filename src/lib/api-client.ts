@@ -1,7 +1,8 @@
 /**
  * Cliente HTTP para comunicarse con el backend API
  */
-import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosError } from 'axios';
+import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import type { ApiResponse } from '../types/api.types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5290/api';

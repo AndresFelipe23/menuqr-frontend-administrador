@@ -593,10 +593,10 @@ export default function UsersPage() {
                           </span>
                         )}
                         {usuario.correoVerificado && (
-                          <CheckCircle className="ml-2 h-4 w-4 text-green-500" title="Correo verificado" />
+                          <CheckCircle className="ml-2 h-4 w-4 text-green-500" />
                         )}
                         {!usuario.correoVerificado && (
-                          <XCircle className="ml-2 h-4 w-4 text-gray-400" title="Correo no verificado" />
+                          <XCircle className="ml-2 h-4 w-4 text-gray-400" />
                         )}
                       </div>
                       <div className="mt-1 flex items-center text-sm text-gray-500 space-x-4">

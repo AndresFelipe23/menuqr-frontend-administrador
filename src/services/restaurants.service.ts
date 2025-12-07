@@ -3,7 +3,6 @@
  */
 import { apiGet, apiPost, apiPut, apiDelete, extractData, extractPaginatedData } from '../lib/api';
 import type {
-  ApiResponse,
   Restaurante,
   PaginatedResponse,
   CrearRestauranteDto,

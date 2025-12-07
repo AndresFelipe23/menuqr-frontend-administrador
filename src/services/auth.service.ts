@@ -2,7 +2,7 @@
  * Servicio de autenticación
  */
 import { apiPost, extractData } from '../lib/api';
-import type { ApiResponse, AuthResponse, AuthUser } from '../types/api.types';
+import type { AuthResponse, AuthUser } from '../types/api.types';
 
 export interface LoginDto {
   email: string;

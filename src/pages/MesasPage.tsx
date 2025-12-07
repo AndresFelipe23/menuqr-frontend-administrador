@@ -38,7 +38,7 @@ export default function MesasPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingMesa, setEditingMesa] = useState<MesaConMesero | null>(null);
 
-  const [formData, setFormData] = useState<CrearMesaDto & ActualizarMesaDto>({
+  const [formData, setFormData] = useState<Partial<CrearMesaDto & ActualizarMesaDto>>({
     numero: '',
     nombre: '',
     codigoQr: '',

@@ -4,7 +4,6 @@ import { useAuth } from '../hooks/useAuth';
 import { routePermissions } from '../utils/permissionMap';
 import {
   Bell,
-  User,
   Settings,
   LogOut,
   ChevronDown,

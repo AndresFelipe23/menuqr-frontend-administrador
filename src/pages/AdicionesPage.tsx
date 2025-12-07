@@ -26,7 +26,7 @@ export default function AdicionesPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingAdicion, setEditingAdicion] = useState<Adicion | null>(null);
 
-  const [formData, setFormData] = useState<CrearAdicionDto & ActualizarAdicionDto>({
+  const [formData, setFormData] = useState<Partial<CrearAdicionDto & ActualizarAdicionDto>>({
     nombre: '',
     descripcion: '',
     precio: 0,

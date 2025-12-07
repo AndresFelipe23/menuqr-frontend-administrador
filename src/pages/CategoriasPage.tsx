@@ -27,7 +27,7 @@ export default function CategoriasPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingCategoria, setEditingCategoria] = useState<Categoria | null>(null);
 
-  const [formData, setFormData] = useState<CrearCategoriaDto & ActualizarCategoriaDto>({
+  const [formData, setFormData] = useState<Partial<CrearCategoriaDto & ActualizarCategoriaDto>>({
     nombre: '',
     descripcion: '',
     imagenUrl: '',
@@ -97,7 +97,7 @@ export default function CategoriasPage() {
       }
 
       // Convertir ordenVisualizacion a número solo si tiene valor
-      if (formData.ordenVisualizacion !== undefined && formData.ordenVisualizacion !== null && formData.ordenVisualizacion !== '') {
+      if (formData.ordenVisualizacion !== undefined && formData.ordenVisualizacion !== null) {
         const ordenNum = parseInt(String(formData.ordenVisualizacion), 10);
         if (!isNaN(ordenNum) && ordenNum >= 0) {
           datosEnviar.ordenVisualizacion = ordenNum;

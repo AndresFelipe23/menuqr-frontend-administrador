@@ -143,7 +143,7 @@ export default function PlanesPage() {
         if (user?.restauranteId) {
           setTimeout(async () => {
             try {
-              const suscripcion = await suscripcionesService.obtenerPorRestauranteId(user.restauranteId);
+              const suscripcion = await suscripcionesService.obtenerPorRestauranteId(user.restauranteId!);
               setSuscripcionActual(suscripcion);
               // Limpiar los parámetros de la URL
               window.history.replaceState({}, document.title, window.location.pathname);

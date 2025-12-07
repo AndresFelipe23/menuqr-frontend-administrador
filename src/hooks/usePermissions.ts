@@ -27,13 +27,13 @@ export function usePermissions() {
     }
 
     // Si tiene el permiso '*', tiene todos los permisos
-    const tieneTodosPermisos = user.permisos.some(p => p.codigo === '*');
+    const tieneTodosPermisos = permisos.some(p => p.codigo === '*');
     if (tieneTodosPermisos) {
       return true;
     }
 
     // Verificar permiso exacto
-    const tienePermisoExacto = user.permisos.some(p => p.codigo === codigoPermiso);
+    const tienePermisoExacto = permisos.some(p => p.codigo === codigoPermiso);
     if (tienePermisoExacto) {
       return true;
     }
@@ -43,7 +43,7 @@ export function usePermissions() {
     if (partesPermiso.length > 1) {
       const moduloPermiso = partesPermiso[0];
       const permisoWildcard = `${moduloPermiso}.*`;
-      const tieneWildcard = user.permisos.some(p => p.codigo === permisoWildcard);
+      const tieneWildcard = permisos.some(p => p.codigo === permisoWildcard);
       if (tieneWildcard) {
         return true;
       }
