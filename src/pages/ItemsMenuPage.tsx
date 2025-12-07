@@ -166,8 +166,8 @@ export default function ItemsMenuPage() {
 
       const datosEnviar: any = {
         restauranteId: user.restauranteId,
-        categoriaId: formData.categoriaId.trim(),
-        nombre: formData.nombre.trim(),
+        categoriaId: formData.categoriaId?.trim() || '',
+        nombre: formData.nombre?.trim() || '',
         precio: formData.precio || 0,
       };
 

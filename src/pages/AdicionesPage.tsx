@@ -84,7 +84,7 @@ export default function AdicionesPage() {
 
       const datosEnviar: any = {
         restauranteId: user.restauranteId,
-        nombre: formData.nombre.trim(),
+        nombre: formData.nombre?.trim() || '',
         precio: formData.precio || 0,
       };
 

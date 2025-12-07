@@ -84,7 +84,7 @@ export default function CategoriasPage() {
       // Preparar datos para enviar, convirtiendo tipos y limpiando campos vacíos
       const datosEnviar: any = {
         restauranteId: user.restauranteId,
-        nombre: formData.nombre.trim(),
+        nombre: formData.nombre?.trim() || '',
       };
 
       // Solo incluir campos opcionales si tienen valor

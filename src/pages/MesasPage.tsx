@@ -155,7 +155,7 @@ export default function MesasPage() {
       // Preparar datos para enviar, convirtiendo tipos y limpiando campos vacíos
       const datosEnviar: any = {
         restauranteId: user.restauranteId,
-        numero: formData.numero.trim(),
+        numero: formData.numero?.trim() || '',
       };
 
       // Solo incluir campos opcionales si tienen valor
