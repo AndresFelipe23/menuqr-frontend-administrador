@@ -7,13 +7,17 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
-    // Eliminar crossorigin de los assets para evitar problemas CORS
     rollupOptions: {
       output: {
         assetFileNames: 'assets/[name]-[hash][extname]',
       },
     },
+    // Desactivar crossorigin en los assets
+    cssCodeSplit: true,
   },
-  // Configurar para que no use crossorigin
   base: '/',
+  // Desactivar crossorigin
+  server: {
+    cors: false,
+  },
 })
