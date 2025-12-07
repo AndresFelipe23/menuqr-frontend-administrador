@@ -6,7 +6,6 @@ export default defineConfig({
   plugins: [react()],
   build: {
     outDir: 'dist',
-    sourcemap: false, // Desactivar source maps en producción
-    minify: 'terser', // Minificar código
+    sourcemap: false,
   },
 })
