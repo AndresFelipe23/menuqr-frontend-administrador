@@ -59,7 +59,7 @@ export default function PedidosPage() {
   const [filtroMesa, setFiltroMesa] = useState<string>('');
   const [selectedPedido, setSelectedPedido] = useState<PedidoCompleto | null>(null);
   const [historial, setHistorial] = useState<HistorialEstadoPedido[]>([]);
-  const [loadingHistorial, setLoadingHistorial] = useState(false);
+  const [, setLoadingHistorial] = useState(false);
   const [showClienteInfo, setShowClienteInfo] = useState(false);
   const [showOpcionesAvanzadas, setShowOpcionesAvanzadas] = useState(false);
   const [vistaPedidos, setVistaPedidos] = useState<'lista' | 'tarjetas' | 'tabla' | 'kanban'>('lista');
