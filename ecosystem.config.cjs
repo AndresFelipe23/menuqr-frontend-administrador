@@ -3,8 +3,8 @@
  * 
  * Uso:
  *   npm run build                              # Primero hacer build
- *   pm2 start ecosystem.config.js              # Iniciar en modo producción
- *   pm2 start ecosystem.config.js --env development  # Iniciar en modo desarrollo
+ *   pm2 start ecosystem.config.cjs             # Iniciar en modo producción
+ *   pm2 start ecosystem.config.cjs --env development  # Iniciar en modo desarrollo
  *   pm2 stop menuqr-frontend-administrador     # Detener
  *   pm2 restart menuqr-frontend-administrador  # Reiniciar
  *   pm2 logs menuqr-frontend-administrador     # Ver logs
@@ -87,7 +87,7 @@ module.exports = {
       ref: 'origin/main',
       repo: 'https://github.com/AndresFelipe23/menuqr-frontend-administrador.git', // Actualizar con tu repo
       path: '/cloudclusters/menuqr-frontend-administrador', // Ruta en el servidor
-      'post-deploy': 'npm install && npm run build && pm2 reload ecosystem.config.js --env production',
+      'post-deploy': 'npm install && npm run build && pm2 reload ecosystem.config.cjs --env production',
       'pre-setup': '',
     },
   },
