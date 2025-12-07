@@ -6,12 +6,15 @@ import {
   Mail, 
   Lock, 
   User, 
-  Store, 
-  Link as LinkIcon, 
   UserPlus, 
   Loader2, 
   AlertCircle,
-  CheckCircle2
+  CheckCircle2,
+  QrCode,
+  Check,
+  Menu,
+  Users,
+  Clock
 } from 'lucide-react';
 
 export default function RegisterPage() {
@@ -22,8 +25,6 @@ export default function RegisterPage() {
     password: '',
     confirmPassword: '',
     nombre: '',
-    nombreRestaurante: '',
-    slugRestaurante: '',
   });
   const [formError, setFormError] = useState<string | null>(null);
   const [passwordStrength, setPasswordStrength] = useState<'weak' | 'medium' | 'strong' | null>(null);
@@ -50,31 +51,13 @@ export default function RegisterPage() {
     }
   };
 
-  const generateSlug = (text: string) => {
-    return text
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-  };
-
-  const handleNombreRestauranteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const nombre = e.target.value;
-    setFormData(prev => ({
-      ...prev,
-      nombreRestaurante: nombre,
-      slugRestaurante: generateSlug(nombre),
-    }));
-    setFormError(null);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
 
     // Validaciones
-    if (!formData.email || !formData.password || !formData.nombre || !formData.nombreRestaurante || !formData.slugRestaurante) {
+    if (!formData.email || !formData.password || !formData.nombre) {
       setFormError('Por favor completa todos los campos requeridos');
       return;
     }
@@ -89,22 +72,17 @@ export default function RegisterPage() {
       return;
     }
 
-    if (!/^[a-z0-9-]+$/.test(formData.slugRestaurante)) {
-      setFormError('El slug solo puede contener letras minúsculas, números y guiones');
-      return;
-    }
-
     try {
-      await register({
+      const authData = await register({
         email: formData.email,
         password: formData.password,
         nombre: formData.nombre,
-        nombreRestaurante: formData.nombreRestaurante,
-        slugRestaurante: formData.slugRestaurante,
       });
-      // Redirigir al dashboard después del registro exitoso
-      navigate('/dashboard');
+      console.log('Registro exitoso:', authData);
+      // Redirigir a la creación del restaurante después del registro exitoso
+      navigate('/register/restaurant', { replace: true });
     } catch (err: any) {
+      console.error('Error en registro:', err);
       setFormError(err.message || 'Error al registrar. Por favor intenta nuevamente.');
     }
   };
@@ -138,29 +116,109 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-2xl w-full">
-        {/* Botón volver al landing */}
-        <Link
-          to="/"
-          className="inline-flex items-center text-sm text-gray-600 hover:text-indigo-600 mb-6 transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Volver al inicio
-        </Link>
+    <div className="min-h-screen flex">
+      {/* Columna izquierda - Información */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-green-500 via-emerald-500 to-teal-600 p-12 flex-col justify-between relative overflow-hidden">
+        {/* Elementos decorativos */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -mr-48 -mt-48"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -ml-48 -mb-48"></div>
+        
+        <div className="relative z-10">
+          {/* Logo */}
+          <Link
+            to="/"
+            className="inline-flex items-center space-x-3 mb-16"
+          >
+            <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center">
+              <QrCode className="h-6 w-6 text-white" />
+            </div>
+            <span className="text-xl font-bold text-white">MenuQR</span>
+          </Link>
 
-        {/* Card principal */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 space-y-6">
+          {/* Contenido */}
+          <div className="max-w-md">
+            <h1 className="text-4xl font-bold text-white mb-6 leading-tight">
+              Comienza tu viaje con MenuQR
+            </h1>
+            <p className="text-xl text-white/90 mb-12 leading-relaxed">
+              Crea tu cuenta y lleva tu restaurante al siguiente nivel con menús digitales modernos
+            </p>
+
+            {/* Características */}
+            <div className="space-y-6">
+              <div className="flex items-start space-x-4">
+                <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Check className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-1">
+                    Configuración en minutos
+                  </h3>
+                  <p className="text-white/80 text-sm">
+                    Crea tu cuenta, configura tu restaurante y comienza a usar códigos QR inmediatamente
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-4">
+                <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Clock className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-1">
+                    Actualización en tiempo real
+                  </h3>
+                  <p className="text-white/80 text-sm">
+                    Modifica tu menú y los cambios se reflejan instantáneamente para tus clientes
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-4">
+                <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Users className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-1">
+                    Gratis para empezar
+                  </h3>
+                  <p className="text-white/80 text-sm">
+                    Plan gratuito disponible con todas las funciones básicas que necesitas
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="relative z-10 text-white/80 text-sm">
+          <p>© {new Date().getFullYear()} MenuQR. Todos los derechos reservados.</p>
+        </div>
+      </div>
+
+      {/* Columna derecha - Formulario */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white overflow-y-auto">
+        <div className="w-full max-w-2xl">
+          {/* Botón volver al landing (solo en móvil) */}
+          <Link
+            to="/"
+            className="lg:hidden inline-flex items-center text-sm text-gray-600 hover:text-green-600 mb-8 transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Volver al inicio
+          </Link>
+
           {/* Header */}
-          <div className="text-center">
-            <div className="mx-auto w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
-              <UserPlus className="h-8 w-8 text-indigo-600" />
+          <div className="text-center mb-8">
+            <div className="mx-auto w-16 h-16 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full flex items-center justify-center mb-4">
+              <UserPlus className="h-8 w-8 text-green-600" />
             </div>
             <h2 className="text-3xl font-bold text-gray-900">
               Crear Cuenta
             </h2>
             <p className="mt-2 text-sm text-gray-600">
-              Comienza a gestionar tu restaurante en minutos
+              Paso 1 de 2: Crea tu cuenta para comenzar
             </p>
           </div>
 
@@ -180,119 +238,54 @@ export default function RegisterPage() {
               </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Información Personal */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                  <User className="h-5 w-5 mr-2 text-indigo-600" />
-                  Información Personal
-                </h3>
-                
-                <div>
-                  <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-2">
-                    Nombre Completo *
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <User className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      id="nombre"
-                      name="nombre"
-                      type="text"
-                      required
-                      value={formData.nombre}
-                      onChange={handleChange}
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-400 transition-colors"
-                      placeholder="Juan Pérez"
-                    />
+            {/* Información Personal */}
+            <div className="space-y-6">
+              <div>
+                <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-2">
+                  Nombre Completo *
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <User className="h-5 w-5 text-gray-400" />
                   </div>
-                </div>
-
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                    Correo Electrónico *
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Mail className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      id="email"
-                      name="email"
-                      type="email"
-                      autoComplete="email"
-                      required
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-400 transition-colors"
-                      placeholder="tu@email.com"
-                    />
-                  </div>
+                  <input
+                    id="nombre"
+                    name="nombre"
+                    type="text"
+                    required
+                    value={formData.nombre}
+                    onChange={handleChange}
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 placeholder-gray-400 transition-colors"
+                    placeholder="Juan Pérez"
+                  />
                 </div>
               </div>
 
-              {/* Información del Restaurante */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                  <Store className="h-5 w-5 mr-2 text-indigo-600" />
-                  Información del Restaurante
-                </h3>
-                
-                <div>
-                  <label htmlFor="nombreRestaurante" className="block text-sm font-medium text-gray-700 mb-2">
-                    Nombre del Restaurante *
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Store className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      id="nombreRestaurante"
-                      name="nombreRestaurante"
-                      type="text"
-                      required
-                      value={formData.nombreRestaurante}
-                      onChange={handleNombreRestauranteChange}
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-400 transition-colors"
-                      placeholder="Mi Restaurante"
-                    />
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                  Correo Electrónico *
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Mail className="h-5 w-5 text-gray-400" />
                   </div>
-                </div>
-
-                <div>
-                  <label htmlFor="slugRestaurante" className="block text-sm font-medium text-gray-700 mb-2">
-                    Slug (URL única) *
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <LinkIcon className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      id="slugRestaurante"
-                      name="slugRestaurante"
-                      type="text"
-                      required
-                      value={formData.slugRestaurante}
-                      onChange={handleChange}
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-400 font-mono text-sm transition-colors"
-                      placeholder="mi-restaurante"
-                    />
-                  </div>
-                  <p className="mt-1 text-xs text-gray-500">
-                    Se genera automáticamente. Solo letras minúsculas, números y guiones.
-                  </p>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 placeholder-gray-400 transition-colors"
+                    placeholder="tu@email.com"
+                  />
                 </div>
               </div>
             </div>
 
             {/* Contraseña */}
             <div className="space-y-4 pt-4 border-t border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                <Lock className="h-5 w-5 mr-2 text-indigo-600" />
-                Contraseña
-              </h3>
-              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
@@ -310,7 +303,7 @@ export default function RegisterPage() {
                       required
                       value={formData.password}
                       onChange={handleChange}
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-400 transition-colors"
+                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 placeholder-gray-400 transition-colors"
                       placeholder="Mínimo 6 caracteres"
                     />
                   </div>
@@ -355,7 +348,7 @@ export default function RegisterPage() {
                       required
                       value={formData.confirmPassword}
                       onChange={handleChange}
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-400 transition-colors"
+                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 placeholder-gray-400 transition-colors"
                       placeholder="Confirma tu contraseña"
                     />
                   </div>
@@ -373,7 +366,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-green-500/30"
             >
               {loading ? (
                 <>
@@ -383,30 +376,30 @@ export default function RegisterPage() {
               ) : (
                 <>
                   <UserPlus className="h-5 w-5 mr-2" />
-                  Crear Cuenta
+                  Continuar
                 </>
               )}
             </button>
           </form>
 
           {/* Footer */}
-          <div className="text-center pt-4 border-t border-gray-200">
+          <div className="text-center pt-6 border-t border-gray-200 mt-6">
             <p className="text-sm text-gray-600">
               ¿Ya tienes una cuenta?{' '}
               <Link
                 to="/login"
-                className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors"
+                className="font-medium text-green-600 hover:text-green-700 transition-colors"
               >
                 Inicia sesión aquí
               </Link>
             </p>
           </div>
-        </div>
 
-        {/* Información adicional */}
-        <p className="mt-6 text-center text-xs text-gray-500">
-          Al registrarte, aceptas nuestros términos de servicio y política de privacidad
-        </p>
+          {/* Información adicional */}
+          <p className="mt-6 text-center text-xs text-gray-500">
+            Al registrarte, aceptas nuestros términos de servicio y política de privacidad
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -19,10 +19,15 @@ const apiClient: AxiosInstance = axios.create({
 // Interceptor para agregar token de autenticación a las peticiones
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // Obtener token del localStorage
-    const token = localStorage.getItem('accessToken');
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // No agregar token a endpoints públicos
+    const isPublicEndpoint = config.url?.includes('/public');
+    
+    if (!isPublicEndpoint) {
+      // Obtener token del localStorage
+      const token = localStorage.getItem('accessToken');
+      if (token && config.headers) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     
     // Si es FormData, no establecer Content-Type (el navegador lo hace automáticamente con boundary)

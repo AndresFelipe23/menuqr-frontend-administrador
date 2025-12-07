@@ -18,6 +18,9 @@ import {
   Building,
   CheckCircle,
   XCircle,
+  Users,
+  UserCheck,
+  UserX,
 } from 'lucide-react';
 
 interface Rol {
@@ -205,6 +208,7 @@ export default function UsersPage() {
       correoVerificado: usuario.correoVerificado,
     });
     setShowForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDelete = async (id: string) => {
@@ -260,6 +264,18 @@ export default function UsersPage() {
     return usuario.nombre || usuario.apellido || usuario.correo;
   };
 
+  const getTotalActivos = () => {
+    return usuarios.filter(u => u.activo).length;
+  };
+
+  const getTotalInactivos = () => {
+    return usuarios.filter(u => !u.activo).length;
+  };
+
+  const getTotalVerificados = () => {
+    return usuarios.filter(u => u.correoVerificado).length;
+  };
+
   if (!user?.restauranteId) {
     return (
       <div className="p-6">
@@ -272,40 +288,108 @@ export default function UsersPage() {
 
   return (
     <div className="p-6">
-      {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Usuarios del Restaurante</h1>
-            <p className="mt-1 text-sm text-gray-500">Gestiona los usuarios y permisos de tu restaurante</p>
+      {/* Header mejorado */}
+      <div className="mb-8">
+        <div className="bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 rounded-xl border border-green-100 p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="flex-shrink-0">
+                <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <Users className="h-7 w-7 text-white" />
+                </div>
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+                  Usuarios del Restaurante
+                  {usuarios.length > 0 && !loading && (
+                    <span className="ml-3 px-3 py-1 text-sm font-semibold bg-green-100 text-green-700 rounded-full">
+                      {usuarios.length}
+                    </span>
+                  )}
+                </h1>
+                <p className="mt-2 text-sm text-gray-600">
+                  Gestiona los usuarios y permisos de tu restaurante
+                </p>
+              </div>
+            </div>
+            {!showForm && (
+              <button
+                onClick={() => {
+                  setShowForm(true);
+                  setEditingUsuario(null);
+                  resetForm();
+                }}
+                className="inline-flex items-center px-5 py-3 border border-transparent rounded-xl shadow-lg text-sm font-semibold text-white bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all transform hover:scale-105"
+              >
+                <Plus className="h-5 w-5 mr-2" />
+                Nuevo Usuario
+              </button>
+            )}
           </div>
-          {!showForm && (
-            <button
-              onClick={() => {
-                setShowForm(true);
-                setEditingUsuario(null);
-                resetForm();
-              }}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-            >
-              <Plus className="h-5 w-5 mr-2" />
-              Nuevo Usuario
-            </button>
-          )}
         </div>
       </div>
+
+      {/* Estadísticas */}
+      {usuarios.length > 0 && !loading && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0 p-2 bg-blue-100 rounded-lg">
+                <Users className="h-5 w-5 text-blue-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Total Usuarios</p>
+                <p className="text-2xl font-semibold text-gray-900">{usuarios.length}</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0 p-2 bg-green-100 rounded-lg">
+                <UserCheck className="h-5 w-5 text-green-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Activos</p>
+                <p className="text-2xl font-semibold text-gray-900">{getTotalActivos()}</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0 p-2 bg-red-100 rounded-lg">
+                <UserX className="h-5 w-5 text-red-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Inactivos</p>
+                <p className="text-2xl font-semibold text-gray-900">{getTotalInactivos()}</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0 p-2 bg-purple-100 rounded-lg">
+                <CheckCircle className="h-5 w-5 text-purple-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Verificados</p>
+                <p className="text-2xl font-semibold text-gray-900">{getTotalVerificados()}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Mensajes de éxito/error */}
       {error && (
         <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start">
-          <AlertCircle className="h-5 w-5 text-red-600 mr-3 mt-0.5" />
+          <AlertCircle className="h-5 w-5 text-red-600 mr-3 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
             <p className="text-sm font-medium text-red-800">Error</p>
             <p className="text-sm text-red-700">{error}</p>
           </div>
           <button
             onClick={() => setError(null)}
-            className="text-red-400 hover:text-red-600"
+            className="text-red-400 hover:text-red-600 ml-2"
           >
             ×
           </button>
@@ -314,14 +398,14 @@ export default function UsersPage() {
 
       {success && (
         <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-start">
-          <CheckCircle2 className="h-5 w-5 text-green-600 mr-3 mt-0.5" />
+          <CheckCircle2 className="h-5 w-5 text-green-600 mr-3 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
             <p className="text-sm font-medium text-green-800">Éxito</p>
             <p className="text-sm text-green-700">{success}</p>
           </div>
           <button
             onClick={() => setSuccess(null)}
-            className="text-green-400 hover:text-green-600"
+            className="text-green-400 hover:text-green-600 ml-2"
           >
             ×
           </button>
@@ -347,7 +431,7 @@ export default function UsersPage() {
                   required
                   value={formData.correo}
                   onChange={handleChange}
-                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
+                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
                   placeholder="usuario@ejemplo.com"
                 />
               </div>
@@ -365,7 +449,7 @@ export default function UsersPage() {
                     required={!editingUsuario}
                     value={formData.password}
                     onChange={handleChange}
-                    className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
+                    className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
                     placeholder={editingUsuario ? 'Nueva contraseña (opcional)' : 'Mínimo 6 caracteres'}
                   />
                   <button
@@ -388,7 +472,7 @@ export default function UsersPage() {
                   id="nombre"
                   value={formData.nombre || ''}
                   onChange={handleChange}
-                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
+                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
                   placeholder="Juan"
                 />
               </div>
@@ -403,7 +487,7 @@ export default function UsersPage() {
                   id="apellido"
                   value={formData.apellido || ''}
                   onChange={handleChange}
-                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
+                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
                   placeholder="Pérez"
                 />
               </div>
@@ -418,12 +502,12 @@ export default function UsersPage() {
                   id="telefono"
                   value={formData.telefono || ''}
                   onChange={handleChange}
-                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
+                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
                   placeholder="+57 300 1234567"
                 />
               </div>
 
-    <div>
+              <div>
                 <label htmlFor="rolId" className="block text-sm font-medium text-gray-700 mb-2">
                   Rol
                 </label>
@@ -432,7 +516,7 @@ export default function UsersPage() {
                   id="rolId"
                   value={formData.rolId || ''}
                   onChange={handleChange}
-                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 bg-white sm:text-sm transition-colors"
+                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 bg-white sm:text-sm transition-colors"
                   disabled={loadingRoles}
                 >
                   <option value="">Sin rol asignado</option>
@@ -454,7 +538,7 @@ export default function UsersPage() {
                   id="avatarUrl"
                   value={formData.avatarUrl || ''}
                   onChange={handleChange}
-                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
+                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
                   placeholder="https://ejemplo.com/avatar.jpg"
                 />
                 {formData.avatarUrl && (
@@ -472,13 +556,13 @@ export default function UsersPage() {
               </div>
 
               <div className="flex items-end">
-                <label className="relative flex items-center p-4 rounded-lg border-2 border-gray-200 hover:border-indigo-300 cursor-pointer transition-colors w-full">
+                <label className="relative flex items-center p-4 rounded-lg border-2 border-gray-200 hover:border-green-300 cursor-pointer transition-colors w-full">
                   <input
                     type="checkbox"
                     name="activo"
                     checked={formData.activo ?? true}
                     onChange={handleChange}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                   />
                   <div className="ml-3">
                     <span className="block text-sm font-medium text-gray-900">Usuario Activo</span>
@@ -488,13 +572,13 @@ export default function UsersPage() {
               </div>
 
               <div className="flex items-end">
-                <label className="relative flex items-center p-4 rounded-lg border-2 border-gray-200 hover:border-indigo-300 cursor-pointer transition-colors w-full">
+                <label className="relative flex items-center p-4 rounded-lg border-2 border-gray-200 hover:border-green-300 cursor-pointer transition-colors w-full">
                   <input
                     type="checkbox"
                     name="correoVerificado"
                     checked={formData.correoVerificado ?? false}
                     onChange={handleChange}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                   />
                   <div className="ml-3">
                     <span className="block text-sm font-medium text-gray-900">Correo Verificado</span>
@@ -508,14 +592,14 @@ export default function UsersPage() {
               <button
                 type="button"
                 onClick={cancelForm}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {saving ? (
                   <>
@@ -533,10 +617,10 @@ export default function UsersPage() {
         </div>
       )}
 
-      {/* Lista de usuarios */}
+      {/* Lista de usuarios - Vista mejorada con cards */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="animate-spin h-8 w-8 text-indigo-600" />
+          <Loader2 className="animate-spin h-8 w-8 text-green-600" />
         </div>
       ) : usuarios.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
@@ -550,7 +634,7 @@ export default function UsersPage() {
                 setEditingUsuario(null);
                 resetForm();
               }}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
             >
               <Plus className="h-5 w-5 mr-2" />
               Nuevo Usuario
@@ -558,109 +642,129 @@ export default function UsersPage() {
           </div>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <ul className="divide-y divide-gray-200">
+        <div>
+          {/* Grid de cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {usuarios.map((usuario) => (
-              <li key={usuario.id} className="p-4 hover:bg-gray-50 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center flex-1 min-w-0">
-                    <div className="flex-shrink-0 mr-4">
-                      {usuario.avatarUrl ? (
-                        <img
-                          src={usuario.avatarUrl}
-                          alt={getNombreCompleto(usuario)}
-                          className="h-12 w-12 rounded-full object-cover border border-gray-200"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                            (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
-                          }}
-                        />
-                      ) : null}
-                      <div className={`h-12 w-12 rounded-full bg-indigo-600 flex items-center justify-center ${usuario.avatarUrl ? 'hidden' : ''}`}>
-                        <span className="text-white font-medium text-lg">
-                          {getNombreCompleto(usuario).charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {getNombreCompleto(usuario)}
-                        </p>
-                        {!usuario.activo && (
-                          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                            Inactivo
+              <div
+                key={usuario.id}
+                className={`bg-white rounded-lg shadow-sm border-2 transition-all hover:shadow-md overflow-hidden ${
+                  usuario.activo ? 'border-gray-200' : 'border-gray-300 opacity-75'
+                }`}
+              >
+                <div className="p-5">
+                  {/* Header del card */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center space-x-3 flex-1 min-w-0">
+                      <div className="flex-shrink-0">
+                        {usuario.avatarUrl ? (
+                          <img
+                            src={usuario.avatarUrl}
+                            alt={getNombreCompleto(usuario)}
+                            className="h-14 w-14 rounded-full object-cover border-2 border-gray-200"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                              const parent = (e.target as HTMLImageElement).parentElement;
+                              if (parent) {
+                                const fallback = parent.querySelector('.avatar-fallback');
+                                if (fallback) fallback.classList.remove('hidden');
+                              }
+                            }}
+                          />
+                        ) : null}
+                        <div className={`h-14 w-14 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center border-2 border-gray-200 ${usuario.avatarUrl ? 'hidden avatar-fallback' : ''}`}>
+                          <span className="text-white font-semibold text-lg">
+                            {getNombreCompleto(usuario).charAt(0).toUpperCase()}
                           </span>
-                        )}
-                        {usuario.correoVerificado && (
-                          <CheckCircle className="ml-2 h-4 w-4 text-green-500" />
-                        )}
-                        {!usuario.correoVerificado && (
-                          <XCircle className="ml-2 h-4 w-4 text-gray-400" />
-                        )}
-                      </div>
-                      <div className="mt-1 flex items-center text-sm text-gray-500 space-x-4">
-                        <div className="flex items-center">
-                          <Mail className="h-4 w-4 mr-1" />
-                          <span className="truncate">{usuario.correo}</span>
                         </div>
-                        {usuario.telefono && (
-                          <div className="flex items-center">
-                            <Phone className="h-4 w-4 mr-1" />
-                            <span>{usuario.telefono}</span>
-                          </div>
-                        )}
-                        {usuario.rolNombre && (
-                          <div className="flex items-center">
-                            <Shield className="h-4 w-4 mr-1" />
-                            <span>{usuario.rolNombre}</span>
-                          </div>
-                        )}
-                        {usuario.restauranteNombre && (
-                          <div className="flex items-center">
-                            <Building className="h-4 w-4 mr-1" />
-                            <span className="truncate">{usuario.restauranteNombre}</span>
-                          </div>
-                        )}
                       </div>
-                      {usuario.ultimoAcceso && (
-                        <p className="mt-1 text-xs text-gray-500">
-                          Último acceso: {new Date(usuario.ultimoAcceso).toLocaleString('es-ES')}
-                        </p>
-                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-2">
+                          <h3 className="text-base font-semibold text-gray-900 truncate">
+                            {getNombreCompleto(usuario)}
+                          </h3>
+                          {usuario.correoVerificado && (
+                            <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" title="Correo verificado" />
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-500 truncate mt-0.5">{usuario.correo}</p>
+                      </div>
                     </div>
+                    {!usuario.activo && (
+                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 flex-shrink-0">
+                        <EyeOff className="h-3 w-3 mr-1" />
+                        Inactivo
+                      </span>
+                    )}
                   </div>
-                  <div className="flex items-center space-x-2 ml-4">
+
+                  {/* Información de contacto */}
+                  <div className="space-y-2 mb-4">
+                    {usuario.telefono && (
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Phone className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
+                        <span className="truncate">{usuario.telefono}</span>
+                      </div>
+                    )}
+                    {usuario.rolNombre && (
+                      <div className="flex items-center text-sm">
+                        <Shield className="h-4 w-4 mr-2 text-purple-500 flex-shrink-0" />
+                        <span className="text-purple-600 font-medium">{usuario.rolNombre}</span>
+                      </div>
+                    )}
+                    {usuario.restauranteNombre && (
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Building className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
+                        <span className="truncate">{usuario.restauranteNombre}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Último acceso */}
+                  {usuario.ultimoAcceso && (
+                    <div className="mb-4 pt-3 border-t border-gray-100">
+                      <p className="text-xs text-gray-500">
+                        Último acceso: {new Date(usuario.ultimoAcceso).toLocaleDateString('es-ES', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                        })}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Acciones */}
+                  <div className="flex items-center justify-end space-x-1 pt-3 border-t border-gray-100">
                     <button
                       onClick={() => handleToggleActivo(usuario)}
-                      className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                      className={`p-1.5 transition-colors ${
+                        usuario.activo
+                          ? 'text-green-600 hover:text-green-700'
+                          : 'text-gray-400 hover:text-gray-600'
+                      }`}
                       title={usuario.activo ? 'Desactivar' : 'Activar'}
                     >
-                      {usuario.activo ? (
-                        <Eye className="h-5 w-5" />
-                      ) : (
-                        <EyeOff className="h-5 w-5" />
-                      )}
+                      {usuario.activo ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                     </button>
                     <button
                       onClick={() => handleEdit(usuario)}
-                      className="p-2 text-gray-400 hover:text-indigo-600 transition-colors"
+                      className="p-1.5 text-gray-400 hover:text-green-600 transition-colors"
                       title="Editar"
                     >
-                      <Edit2 className="h-5 w-5" />
+                      <Edit2 className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(usuario.id)}
-                      className="p-2 text-gray-400 hover:text-red-600 transition-colors"
+                      className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
                       title="Eliminar"
                     >
-                      <Trash2 className="h-5 w-5" />
+                      <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       )}
     </div>

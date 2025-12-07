@@ -3,11 +3,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { routePermissions } from '../utils/permissionMap';
 import {
-  Bell,
   Settings,
   LogOut,
   ChevronDown,
-  Search,
 } from 'lucide-react';
 
 export default function Navbar() {
@@ -58,27 +56,6 @@ export default function Navbar() {
 
           {/* Acciones del usuario */}
           <div className="flex items-center space-x-3">
-            {/* Buscador (opcional, puede ocultarse en móvil) */}
-            <div className="hidden md:flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-100/50 backdrop-blur-sm border border-gray-200/50 hover:border-gray-300/50 transition-all">
-              <Search className="h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Buscar..."
-                className="bg-transparent border-none outline-none text-sm text-gray-700 placeholder-gray-400 w-32"
-              />
-            </div>
-
-            {/* Notificaciones */}
-            <button
-              type="button"
-              className="relative p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100/50 backdrop-blur-sm transition-all focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-              aria-label="Ver notificaciones"
-            >
-              <Bell className="h-5 w-5" />
-              {/* Badge de notificaciones */}
-              <span className="absolute top-1 right-1 h-2 w-2 bg-green-500 rounded-full border-2 border-white"></span>
-            </button>
-
             {/* Menú de usuario */}
             <div className="relative">
               <button

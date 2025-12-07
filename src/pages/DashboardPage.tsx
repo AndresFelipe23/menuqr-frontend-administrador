@@ -1,10 +1,29 @@
 import { useAuth } from '../hooks/useAuth';
 import { restaurantsService } from '../services';
 import { suscripcionesService } from '../services/suscripciones.service';
+import { pedidosService } from '../services/pedidos.service';
+import { mesasService } from '../services/mesas.service';
+import { categoriasService } from '../services/categorias.service';
+import { itemsMenuService } from '../services/items-menu.service';
+import { usuariosService } from '../services/usuarios.service';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Sparkles, X } from 'lucide-react';
-import type { Restaurante, Suscripcion } from '../types/api.types';
+import { 
+  ArrowRight, 
+  Sparkles, 
+  X, 
+  Store, 
+  ShoppingBag, 
+  Users, 
+  Menu as MenuIcon, 
+  ClipboardList,
+  TrendingUp,
+  Clock,
+  CheckCircle2,
+  Package,
+  LayoutDashboard
+} from 'lucide-react';
+import type { Restaurante, Suscripcion, PedidoCompleto } from '../types/api.types';
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -12,17 +31,81 @@ export default function DashboardPage() {
   const [suscripcion, setSuscripcion] = useState<Suscripcion | null>(null);
   const [loading, setLoading] = useState(true);
   const [showUpgradeBanner, setShowUpgradeBanner] = useState(true);
+  
+  // Estadísticas
+  const [stats, setStats] = useState({
+    totalItems: 0,
+    totalCategorias: 0,
+    totalMesas: 0,
+    totalUsuarios: 0,
+    pedidosHoy: 0,
+    pedidosPendientes: 0,
+    pedidosCompletados: 0,
+  });
+  
+  const [pedidosRecientes, setPedidosRecientes] = useState<PedidoCompleto[]>([]);
 
   useEffect(() => {
     async function loadData() {
       if (user?.restauranteId) {
         try {
-          const [restauranteData, suscripcionData] = await Promise.all([
+          const [
+            restauranteData,
+            suscripcionData,
+            itemsData,
+            categoriasData,
+            mesasData,
+            usuariosData,
+            pedidosData,
+          ] = await Promise.all([
             restaurantsService.obtenerPorId(user.restauranteId),
             suscripcionesService.obtenerPorRestauranteId(user.restauranteId).catch(() => null),
+            itemsMenuService.obtenerPorRestauranteId(user.restauranteId).catch(() => []),
+            categoriasService.obtenerPorRestauranteId(user.restauranteId).catch(() => []),
+            mesasService.obtenerPorRestauranteId(user.restauranteId).catch(() => []),
+            usuariosService.obtenerPorRestauranteId(user.restauranteId).catch(() => []),
+            pedidosService.obtenerPorRestauranteId(user.restauranteId).catch(() => []),
           ]);
+
           setRestaurante(restauranteData);
           setSuscripcion(suscripcionData);
+
+          // Calcular estadísticas
+          const hoy = new Date();
+          hoy.setHours(0, 0, 0, 0);
+          
+          const pedidosHoyCount = pedidosData.filter((p: PedidoCompleto) => {
+            const fechaPedido = new Date(p.fechaCreacion);
+            fechaPedido.setHours(0, 0, 0, 0);
+            return fechaPedido.getTime() === hoy.getTime();
+          }).length;
+
+          const pedidosPendientes = pedidosData.filter((p: PedidoCompleto) => 
+            p.estado === 'pendiente' || p.estado === 'confirmado' || p.estado === 'en_preparacion'
+          ).length;
+
+          const pedidosCompletados = pedidosData.filter((p: PedidoCompleto) => 
+            p.estado === 'completado'
+          ).length;
+
+          setStats({
+            totalItems: itemsData.length,
+            totalCategorias: categoriasData.length,
+            totalMesas: mesasData.filter((m: any) => m.activa).length,
+            totalUsuarios: usuariosData.length,
+            pedidosHoy: pedidosHoyCount,
+            pedidosPendientes,
+            pedidosCompletados,
+          });
+
+          // Pedidos recientes (últimos 5)
+          const pedidosOrdenados = [...pedidosData]
+            .sort((a: PedidoCompleto, b: PedidoCompleto) => 
+              new Date(b.fechaCreacion).getTime() - new Date(a.fechaCreacion).getTime()
+            )
+            .slice(0, 5);
+          setPedidosRecientes(pedidosOrdenados);
+
         } catch (error) {
           console.error('Error al cargar datos:', error);
         } finally {
@@ -35,49 +118,60 @@ export default function DashboardPage() {
     loadData();
   }, [user?.restauranteId]);
 
-  const stats = [
+  const statCards = [
     {
-      name: 'Restaurante',
-      value: restaurante ? restaurante.nombre : 'No configurado',
-      icon: (
-        <svg className="h-8 w-8 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-        </svg>
-      ),
-      color: 'bg-indigo-500',
-      link: '/dashboard/restaurant',
+      name: 'Items del Menú',
+      value: stats.totalItems,
+      icon: MenuIcon,
+      bgColor: 'bg-blue-100',
+      iconColor: 'text-blue-600',
+      link: '/dashboard/menu',
+      description: 'Platos disponibles',
     },
     {
-      name: 'Estado',
-      value: restaurante?.activo ? 'Activo' : 'Inactivo',
-      icon: (
-        <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
-      color: restaurante?.activo ? 'bg-green-500' : 'bg-gray-500',
+      name: 'Categorías',
+      value: stats.totalCategorias,
+      icon: ClipboardList,
+      bgColor: 'bg-purple-100',
+      iconColor: 'text-purple-600',
+      link: '/dashboard/categorias',
+      description: 'Grupos de platos',
     },
     {
-      name: 'Suscripción',
-      value: suscripcion ? suscripcion.tipoPlan.toUpperCase() : restaurante?.estadoSuscripcion || 'N/A',
-      icon: (
-        <svg className="h-8 w-8 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
-      color: suscripcion?.tipoPlan === 'free' ? 'bg-gray-500' : suscripcion?.tipoPlan === 'pro' ? 'bg-indigo-500' : 'bg-purple-500',
-      link: '/dashboard/planes',
+      name: 'Mesas Activas',
+      value: stats.totalMesas,
+      icon: Package,
+      bgColor: 'bg-green-100',
+      iconColor: 'text-green-600',
+      link: '/dashboard/mesas',
+      description: 'Mesas configuradas',
     },
     {
       name: 'Pedidos Hoy',
-      value: '0',
-      icon: (
-        <svg className="h-8 w-8 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-        </svg>
-      ),
-      color: 'bg-purple-500',
+      value: stats.pedidosHoy,
+      icon: ShoppingBag,
+      bgColor: 'bg-orange-100',
+      iconColor: 'text-orange-600',
       link: '/dashboard/orders',
+      description: 'Pedidos de hoy',
+    },
+    {
+      name: 'Pedidos Pendientes',
+      value: stats.pedidosPendientes,
+      icon: Clock,
+      bgColor: 'bg-yellow-100',
+      iconColor: 'text-yellow-600',
+      link: '/dashboard/orders',
+      description: 'Requieren atención',
+    },
+    {
+      name: 'Usuarios',
+      value: stats.totalUsuarios,
+      icon: Users,
+      bgColor: 'bg-indigo-100',
+      iconColor: 'text-indigo-600',
+      link: '/dashboard/users',
+      description: 'Miembros del equipo',
     },
   ];
 
@@ -86,67 +180,87 @@ export default function DashboardPage() {
       name: 'Configurar Restaurante',
       description: 'Actualiza la información de tu restaurante',
       href: '/dashboard/restaurant',
-      icon: (
-        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-        </svg>
-      ),
+      icon: Store,
     },
     {
       name: 'Gestionar Menú',
       description: 'Agrega o edita productos y categorías',
       href: '/dashboard/menu',
-      icon: (
-        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-        </svg>
-      ),
+      icon: MenuIcon,
     },
     {
       name: 'Ver Pedidos',
       description: 'Revisa y gestiona los pedidos activos',
       href: '/dashboard/orders',
-      icon: (
-        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-        </svg>
-      ),
+      icon: ShoppingBag,
     },
     {
-      name: 'Gestionar Usuarios',
-      description: 'Agrega o edita usuarios del sistema',
-      href: '/dashboard/users',
-      icon: (
-        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-        </svg>
-      ),
+      name: 'Gestionar Mesas',
+      description: 'Configura y administra las mesas',
+      href: '/dashboard/mesas',
+      icon: Package,
     },
   ];
+
+  const getEstadoBadgeColor = (estado: string) => {
+    switch (estado) {
+      case 'pendiente':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'confirmado':
+        return 'bg-blue-100 text-blue-800';
+      case 'en_preparacion':
+        return 'bg-orange-100 text-orange-800';
+      case 'completado':
+        return 'bg-green-100 text-green-800';
+      case 'cancelado':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const formatearFecha = (fecha: string) => {
+    const date = new Date(fecha);
+    const ahora = new Date();
+    const diffMs = ahora.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    
+    if (diffMins < 1) return 'Hace un momento';
+    if (diffMins < 60) return `Hace ${diffMins} min`;
+    if (diffMins < 1440) return `Hace ${Math.floor(diffMins / 60)} h`;
+    return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+  };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
       </div>
     );
   }
 
   return (
     <div>
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">
-          Bienvenido, {user?.nombre}
-        </h1>
-        <p className="mt-2 text-sm text-gray-600">
-          Aquí está el resumen de tu restaurante y las acciones rápidas
-        </p>
+      {/* Header con gradiente verde */}
+      <div className="bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 rounded-2xl p-6 mb-8 border border-green-100">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-lg">
+            <LayoutDashboard className="h-14 w-14 text-white" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Bienvenido, {user?.nombre} 👋
+            </h1>
+            <p className="text-gray-600">
+              Aquí está el resumen de tu restaurante y las acciones rápidas
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Banner de Upgrade para usuarios FREE */}
       {suscripcion?.tipoPlan === 'free' && showUpgradeBanner && (
-        <div className="mb-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg shadow-lg p-6 text-white relative overflow-hidden">
+        <div className="mb-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg shadow-lg p-6 text-white relative overflow-hidden">
           <button
             onClick={() => setShowUpgradeBanner(false)}
             className="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors"
@@ -162,10 +276,10 @@ export default function DashboardPage() {
               <h3 className="text-xl font-bold mb-2">
                 ¡Desbloquea todo el potencial de tu restaurante!
               </h3>
-              <p className="text-indigo-100 mb-4">
+              <p className="text-green-100 mb-4">
                 Estás usando el plan <strong>FREE</strong>. Actualiza a <strong>PRO</strong> o <strong>PREMIUM</strong> para obtener:
               </p>
-              <ul className="list-disc list-inside text-indigo-100 space-y-1 mb-4">
+              <ul className="list-disc list-inside text-green-100 space-y-1 mb-4">
                 <li>Items, mesas y usuarios ilimitados</li>
                 <li>WebSockets en tiempo real</li>
                 <li>Analytics y reportes avanzados</li>
@@ -173,7 +287,7 @@ export default function DashboardPage() {
               </ul>
               <Link
                 to="/dashboard/planes"
-                className="inline-flex items-center px-6 py-3 bg-white text-indigo-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors"
+                className="inline-flex items-center px-6 py-3 bg-white text-green-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors"
               >
                 Ver Planes
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -184,23 +298,32 @@ export default function DashboardPage() {
       )}
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-        {stats.map((stat) => {
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+        {statCards.map((stat) => {
+          const Icon = stat.icon;
           const content = (
-            <div className="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow">
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">{stat.icon}</div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">
+            <div className="bg-white overflow-hidden rounded-xl hover:shadow-lg transition-all border border-gray-200 hover:border-green-300 hover:-translate-y-1">
+              <div className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className={`flex-shrink-0 p-4 rounded-xl ${stat.bgColor} shadow-sm`}>
+                      <Icon className={`h-7 w-7 ${stat.iconColor}`} strokeWidth={2.5} />
+                    </div>
+                    <div className="flex-1">
+                      <dt className="text-sm font-medium text-gray-500 mb-1">
                         {stat.name}
                       </dt>
-                      <dd className="text-lg font-semibold text-gray-900 capitalize">
+                      <dd className="text-3xl font-bold text-gray-900 mb-1">
                         {stat.value}
                       </dd>
-                    </dl>
+                      <dd className="text-xs text-gray-500">
+                        {stat.description}
+                      </dd>
+                    </div>
                   </div>
+                  {stat.link && (
+                    <ArrowRight className={`h-5 w-5 ${stat.iconColor} opacity-50`} />
+                  )}
                 </div>
               </div>
             </div>
@@ -216,34 +339,128 @@ export default function DashboardPage() {
         })}
       </div>
 
-      {/* Quick Actions */}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Acciones Rápidas</h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {quickActions.map((action) => (
-            <Link
-              key={action.name}
-              to={action.href}
-              className="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-indigo-500 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500 transition-colors"
-            >
-              <div className="flex-shrink-0 text-indigo-600">
-                {action.icon}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        {/* Quick Actions */}
+        <div className="lg:col-span-1">
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 mb-4 border border-green-100">
+            <h2 className="text-xl font-bold text-gray-900">Acciones Rápidas</h2>
+            <p className="text-sm text-gray-600 mt-1">Accesos directos a funciones principales</p>
+          </div>
+          <div className="space-y-3">
+            {quickActions.map((action) => {
+              const Icon = action.icon;
+              return (
+                <Link
+                  key={action.name}
+                  to={action.href}
+                  className="relative rounded-xl border-2 border-gray-200 bg-white px-5 py-4 shadow-sm flex items-center space-x-4 hover:border-green-500 hover:shadow-md hover:-translate-y-0.5 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-green-500 transition-all group"
+                >
+                  <div className="flex-shrink-0 p-2 bg-green-100 rounded-lg group-hover:bg-green-600 transition-colors">
+                    <Icon className="h-5 w-5 text-green-600 group-hover:text-white transition-colors" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="absolute inset-0" aria-hidden="true" />
+                    <p className="text-sm font-semibold text-gray-900">{action.name}</p>
+                    <p className="text-xs text-gray-500">{action.description}</p>
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-green-600 group-hover:translate-x-1 transition-all" />
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Pedidos Recientes */}
+        <div className="lg:col-span-2">
+          <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200">
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-600 rounded-lg">
+                  <ShoppingBag className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Pedidos Recientes</h3>
+                  <p className="text-xs text-gray-600">Últimos 5 pedidos registrados</p>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <span className="absolute inset-0" aria-hidden="true" />
-                <p className="text-sm font-medium text-gray-900">{action.name}</p>
-                <p className="text-sm text-gray-500 truncate">{action.description}</p>
+              <Link
+                to="/dashboard/orders"
+                className="text-sm text-green-600 hover:text-green-700 font-semibold flex items-center gap-1 transition-colors"
+              >
+                Ver todos
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+            {pedidosRecientes.length > 0 ? (
+              <div className="divide-y divide-gray-200">
+                {pedidosRecientes.map((pedido) => (
+                  <div key={pedido.id} className="px-4 py-4 sm:px-6 hover:bg-gray-50 transition-colors">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3">
+                          <span className="text-sm font-medium text-gray-900">
+                            Mesa {pedido.mesaNumero || 'N/A'}
+                          </span>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getEstadoBadgeColor(pedido.estado)}`}>
+                            {pedido.estado.replace('_', ' ')}
+                          </span>
+                        </div>
+                        {pedido.nombreCliente && (
+                          <p className="text-sm text-gray-500 mt-1">
+                            Cliente: {pedido.nombreCliente}
+                          </p>
+                        )}
+                        <p className="text-xs text-gray-400 mt-1">
+                          {formatearFecha(pedido.fechaCreacion)}
+                        </p>
+                      </div>
+                      <div className="ml-4 text-right">
+                        <p className="text-sm font-semibold text-gray-900">
+                          ${pedido.montoTotal?.toFixed(2) || '0.00'}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {pedido.items?.length || 0} items
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </Link>
-          ))}
+            ) : (
+              <div className="px-4 py-12 text-center">
+                <ShoppingBag className="mx-auto h-12 w-12 text-gray-400" />
+                <h3 className="mt-2 text-sm font-medium text-gray-900">No hay pedidos</h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Los pedidos recientes aparecerán aquí
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Información del Restaurante */}
       {restaurante && (
-        <div className="bg-white shadow rounded-lg overflow-hidden">
-          <div className="px-4 py-5 sm:p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Información del Restaurante</h3>
+        <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200">
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-600 rounded-lg">
+                <Store className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Información del Restaurante</h3>
+                <p className="text-xs text-gray-600">Datos básicos de tu establecimiento</p>
+              </div>
+            </div>
+            <Link
+              to="/dashboard/restaurant"
+              className="text-sm text-green-600 hover:text-green-700 font-semibold flex items-center gap-1 transition-colors"
+            >
+              Editar información
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+          <div className="px-6 py-6">
             <dl className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
               <div>
                 <dt className="text-sm font-medium text-gray-500">Nombre</dt>
@@ -285,14 +502,6 @@ export default function DashboardPage() {
                 </dd>
               </div>
             </dl>
-            <div className="mt-6">
-              <Link
-                to="/dashboard/restaurant"
-                className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
-              >
-                Editar información →
-              </Link>
-            </div>
           </div>
         </div>
       )}

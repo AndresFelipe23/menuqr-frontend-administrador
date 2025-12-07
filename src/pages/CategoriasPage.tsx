@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { categoriasService } from '../services';
+import { itemsMenuService } from '../services/items-menu.service';
 import type { Categoria, CrearCategoriaDto, ActualizarCategoriaDto } from '../types/api.types';
 import {
   Plus,
@@ -12,14 +13,22 @@ import {
   Loader2,
   AlertCircle,
   CheckCircle2,
-  GripVertical,
   Image as ImageIcon,
+  MoveUp,
+  MoveDown,
+  Package,
+  Menu as MenuIcon,
 } from 'lucide-react';
 import ImageUpload from '../components/ImageUpload';
+import { Link } from 'react-router-dom';
+
+interface CategoriaConItems extends Categoria {
+  totalItems?: number;
+}
 
 export default function CategoriasPage() {
   const { user } = useAuth();
-  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [categorias, setCategorias] = useState<CategoriaConItems[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,10 +56,24 @@ export default function CategoriasPage() {
     try {
       setLoading(true);
       setError(null);
-      const data = await categoriasService.obtenerPorRestauranteId(user.restauranteId);
+      const [data, itemsData] = await Promise.all([
+        categoriasService.obtenerPorRestauranteId(user.restauranteId),
+        itemsMenuService.obtenerPorRestauranteId(user.restauranteId).catch(() => []),
+      ]);
+
       // Ordenar por ordenVisualizacion
       const sorted = data.sort((a, b) => a.ordenVisualizacion - b.ordenVisualizacion);
-      setCategorias(sorted);
+      
+      // Contar items por categoría
+      const categoriasConItems: CategoriaConItems[] = sorted.map(categoria => {
+        const totalItems = itemsData.filter((item: any) => item.categoriaId === categoria.id).length;
+        return {
+          ...categoria,
+          totalItems,
+        };
+      });
+
+      setCategorias(categoriasConItems);
     } catch (err: any) {
       setError(err.message || 'Error al cargar las categorías');
     } finally {
@@ -81,13 +104,11 @@ export default function CategoriasPage() {
       setError(null);
       setSuccess(null);
 
-      // Preparar datos para enviar, convirtiendo tipos y limpiando campos vacíos
       const datosEnviar: any = {
         restauranteId: user.restauranteId,
         nombre: formData.nombre?.trim() || '',
       };
 
-      // Solo incluir campos opcionales si tienen valor
       if (formData.descripcion?.trim()) {
         datosEnviar.descripcion = formData.descripcion.trim();
       }
@@ -96,29 +117,24 @@ export default function CategoriasPage() {
         datosEnviar.imagenUrl = formData.imagenUrl.trim();
       }
 
-      // Convertir ordenVisualizacion a número solo si tiene valor
       if (formData.ordenVisualizacion !== undefined && formData.ordenVisualizacion !== null) {
         const ordenNum = parseInt(String(formData.ordenVisualizacion), 10);
         if (!isNaN(ordenNum) && ordenNum >= 0) {
           datosEnviar.ordenVisualizacion = ordenNum;
         }
       } else if (!editingCategoria) {
-        // Solo asignar orden automático al crear, no al actualizar
         datosEnviar.ordenVisualizacion = categorias.length + 1;
       }
 
-      // Incluir activa solo si es diferente del valor por defecto o si está editando
       if (formData.activa !== undefined) {
         datosEnviar.activa = formData.activa;
       }
 
       if (editingCategoria) {
-        // Actualizar - remover restauranteId del objeto para actualizar
         const { restauranteId, ...datosActualizar } = datosEnviar;
         await categoriasService.actualizar(editingCategoria.id, datosActualizar);
         setSuccess('Categoría actualizada exitosamente');
       } else {
-        // Crear
         await categoriasService.crear(datosEnviar);
         setSuccess('Categoría creada exitosamente');
       }
@@ -144,6 +160,7 @@ export default function CategoriasPage() {
       activa: categoria.activa,
     });
     setShowForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDelete = async (id: string) => {
@@ -170,6 +187,25 @@ export default function CategoriasPage() {
     }
   };
 
+  const handleMoveOrder = async (categoria: CategoriaConItems, direction: 'up' | 'down') => {
+    const currentIndex = categorias.findIndex(c => c.id === categoria.id);
+    if (currentIndex === -1) return;
+
+    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    if (newIndex < 0 || newIndex >= categorias.length) return;
+
+    const targetCategoria = categorias[newIndex];
+    const newOrder = targetCategoria.ordenVisualizacion;
+
+    try {
+      await categoriasService.actualizar(categoria.id, { ordenVisualizacion: newOrder });
+      await categoriasService.actualizar(targetCategoria.id, { ordenVisualizacion: categoria.ordenVisualizacion });
+      loadCategorias();
+    } catch (err: any) {
+      setError(err.message || 'Error al cambiar el orden');
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       nombre: '',
@@ -186,6 +222,14 @@ export default function CategoriasPage() {
     resetForm();
   };
 
+  const getTotalItems = () => {
+    return categorias.reduce((sum, categoria) => sum + (categoria.totalItems || 0), 0);
+  };
+
+  const getCategoriasActivas = () => {
+    return categorias.filter(c => c.activa);
+  };
+
   if (!user?.restauranteId) {
     return (
       <div className="p-6">
@@ -198,40 +242,97 @@ export default function CategoriasPage() {
 
   return (
     <div className="p-6">
-      {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Categorías del Menú</h1>
-            <p className="mt-1 text-sm text-gray-500">Gestiona las categorías para organizar los platos de tu menú</p>
+      {/* Header mejorado */}
+      <div className="mb-8">
+        <div className="bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 rounded-xl border border-green-100 p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="flex-shrink-0">
+                <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <Folder className="h-7 w-7 text-white" />
+                </div>
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+                  Categorías del Menú
+                  {categorias.length > 0 && !loading && (
+                    <span className="ml-3 px-3 py-1 text-sm font-semibold bg-green-100 text-green-700 rounded-full">
+                      {categorias.length}
+                    </span>
+                  )}
+                </h1>
+                <p className="mt-2 text-sm text-gray-600">
+                  Organiza y gestiona las categorías de tu menú para una mejor experiencia
+                </p>
+              </div>
+            </div>
+            {!showForm && (
+              <button
+                onClick={() => {
+                  setShowForm(true);
+                  setEditingCategoria(null);
+                  resetForm();
+                }}
+                className="inline-flex items-center px-5 py-3 border border-transparent rounded-xl shadow-lg text-sm font-semibold text-white bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all transform hover:scale-105"
+              >
+                <Plus className="h-5 w-5 mr-2" />
+                Nueva Categoría
+              </button>
+            )}
           </div>
-          {!showForm && (
-            <button
-              onClick={() => {
-                setShowForm(true);
-                setEditingCategoria(null);
-                resetForm();
-              }}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-            >
-              <Plus className="h-5 w-5 mr-2" />
-              Nueva Categoría
-            </button>
-          )}
         </div>
       </div>
+
+      {/* Estadísticas */}
+      {categorias.length > 0 && !loading && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0 p-2 bg-purple-100 rounded-lg">
+                <Folder className="h-5 w-5 text-purple-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Total de Categorías</p>
+                <p className="text-2xl font-semibold text-gray-900">{categorias.length}</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0 p-2 bg-green-100 rounded-lg">
+                <Eye className="h-5 w-5 text-green-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Categorías Activas</p>
+                <p className="text-2xl font-semibold text-gray-900">{getCategoriasActivas().length}</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0 p-2 bg-blue-100 rounded-lg">
+                <MenuIcon className="h-5 w-5 text-blue-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Total de Items</p>
+                <p className="text-2xl font-semibold text-gray-900">{getTotalItems()}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Mensajes de éxito/error */}
       {error && (
         <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start">
-          <AlertCircle className="h-5 w-5 text-red-600 mr-3 mt-0.5" />
+          <AlertCircle className="h-5 w-5 text-red-600 mr-3 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
             <p className="text-sm font-medium text-red-800">Error</p>
             <p className="text-sm text-red-700">{error}</p>
           </div>
           <button
             onClick={() => setError(null)}
-            className="text-red-400 hover:text-red-600"
+            className="text-red-400 hover:text-red-600 ml-2"
           >
             ×
           </button>
@@ -240,14 +341,14 @@ export default function CategoriasPage() {
 
       {success && (
         <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-start">
-          <CheckCircle2 className="h-5 w-5 text-green-600 mr-3 mt-0.5" />
+          <CheckCircle2 className="h-5 w-5 text-green-600 mr-3 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
             <p className="text-sm font-medium text-green-800">Éxito</p>
             <p className="text-sm text-green-700">{success}</p>
           </div>
           <button
             onClick={() => setSuccess(null)}
-            className="text-green-400 hover:text-green-600"
+            className="text-green-400 hover:text-green-600 ml-2"
           >
             ×
           </button>
@@ -273,7 +374,7 @@ export default function CategoriasPage() {
                   required
                   value={formData.nombre}
                   onChange={handleChange}
-                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
+                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
                   placeholder="Ej: Entradas, Platos Principales, Postres"
                 />
               </div>
@@ -288,7 +389,7 @@ export default function CategoriasPage() {
                   rows={3}
                   value={formData.descripcion || ''}
                   onChange={handleChange}
-                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
+                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
                   placeholder="Descripción opcional de la categoría"
                 />
               </div>
@@ -321,19 +422,19 @@ export default function CategoriasPage() {
                   min="0"
                   value={formData.ordenVisualizacion ?? ''}
                   onChange={handleChange}
-                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
+                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
                   placeholder="Auto (siguiente orden disponible)"
                 />
               </div>
 
               <div className="flex items-end">
-                <label className="relative flex items-center p-4 rounded-lg border-2 border-gray-200 hover:border-indigo-300 cursor-pointer transition-colors w-full">
+                <label className="relative flex items-center p-4 rounded-lg border-2 border-gray-200 hover:border-green-300 cursor-pointer transition-colors w-full">
                   <input
                     type="checkbox"
                     name="activa"
                     checked={formData.activa ?? true}
                     onChange={handleChange}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                   />
                   <div className="ml-3">
                     <span className="block text-sm font-medium text-gray-900">Categoría Activa</span>
@@ -347,14 +448,14 @@ export default function CategoriasPage() {
               <button
                 type="button"
                 onClick={cancelForm}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {saving ? (
                   <>
@@ -372,10 +473,10 @@ export default function CategoriasPage() {
         </div>
       )}
 
-      {/* Lista de categorías */}
+      {/* Lista de categorías - Vista mejorada con cards */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="animate-spin h-8 w-8 text-indigo-600" />
+          <Loader2 className="animate-spin h-8 w-8 text-green-600" />
         </div>
       ) : categorias.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
@@ -389,7 +490,7 @@ export default function CategoriasPage() {
                 setEditingCategoria(null);
                 resetForm();
               }}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
             >
               <Plus className="h-5 w-5 mr-2" />
               Nueva Categoría
@@ -397,83 +498,121 @@ export default function CategoriasPage() {
           </div>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <ul className="divide-y divide-gray-200">
-            {categorias.map((categoria) => (
-              <li key={categoria.id} className="p-4 hover:bg-gray-50 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center flex-1 min-w-0">
-                    <GripVertical className="h-5 w-5 text-gray-400 mr-3 flex-shrink-0" />
-                    {categoria.imagenUrl && (
-                      <div className="flex-shrink-0 mr-4">
-                        <img
-                          src={categoria.imagenUrl}
-                          alt={categoria.nombre}
-                          className="h-16 w-16 object-cover rounded-lg border border-gray-200"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                          }}
-                        />
-                      </div>
-                    )}
-                    {!categoria.imagenUrl && (
-                      <div className="flex-shrink-0 mr-4">
-                        <div className="h-16 w-16 rounded-lg border border-gray-200 bg-gray-100 flex items-center justify-center">
-                          <ImageIcon className="h-8 w-8 text-gray-400" />
-                        </div>
-                      </div>
-                    )}
+        <div>
+          {/* Grid de cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {categorias.map((categoria, index) => (
+              <div
+                key={categoria.id}
+                className={`bg-white rounded-lg shadow-sm border-2 transition-all hover:shadow-md overflow-hidden ${
+                  categoria.activa ? 'border-gray-200' : 'border-gray-300 opacity-75'
+                }`}
+              >
+                {/* Imagen de la categoría */}
+                {categoria.imagenUrl ? (
+                  <div className="h-40 w-full bg-gray-100 overflow-hidden">
+                    <img
+                      src={categoria.imagenUrl}
+                      alt={categoria.nombre}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                        (e.target as HTMLImageElement).parentElement!.innerHTML = '<div class="w-full h-full bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center"><svg class="h-16 w-16 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></div>';
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div className="h-40 w-full bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center">
+                    <ImageIcon className="h-16 w-16 text-purple-400" />
+                  </div>
+                )}
+
+                <div className="p-5">
+                  {/* Header del card */}
+                  <div className="flex items-start justify-between mb-3">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center">
-                        <p className="text-sm font-medium text-gray-900 truncate">{categoria.nombre}</p>
-                        {!categoria.activa && (
-                          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                            Inactiva
-                          </span>
-                        )}
-                      </div>
+                      <h3 className="text-base font-semibold text-gray-900 truncate">{categoria.nombre}</h3>
                       {categoria.descripcion && (
-                        <p className="mt-1 text-sm text-gray-500 line-clamp-2">{categoria.descripcion}</p>
+                        <p className="text-sm text-gray-500 mt-1 line-clamp-2">{categoria.descripcion}</p>
                       )}
-                      <div className="mt-1 flex items-center text-xs text-gray-500">
-                        <span>Orden: {categoria.ordenVisualizacion}</span>
-                      </div>
+                    </div>
+                    {!categoria.activa && (
+                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 flex-shrink-0">
+                        <EyeOff className="h-3 w-3 mr-1" />
+                        Inactiva
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Estadísticas */}
+                  <div className="flex items-center justify-between pt-3 border-t border-gray-100 mb-3">
+                    <Link
+                      to={`/dashboard/menu?categoriaId=${categoria.id}`}
+                      className="flex items-center text-sm text-gray-600 hover:text-green-600 transition-colors"
+                    >
+                      <Package className="h-4 w-4 mr-1" />
+                      <span className="font-medium">{categoria.totalItems || 0}</span>
+                      <span className="ml-1">items</span>
+                    </Link>
+                    <div className="text-xs text-gray-500">
+                      Orden: {categoria.ordenVisualizacion}
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2 ml-4">
-                    <button
-                      onClick={() => handleToggleActiva(categoria)}
-                      className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-                      title={categoria.activa ? 'Desactivar' : 'Activar'}
-                    >
-                      {categoria.activa ? (
-                        <Eye className="h-5 w-5" />
-                      ) : (
-                        <EyeOff className="h-5 w-5" />
-                      )}
-                    </button>
-                    <button
-                      onClick={() => handleEdit(categoria)}
-                      className="p-2 text-gray-400 hover:text-indigo-600 transition-colors"
-                      title="Editar"
-                    >
-                      <Edit2 className="h-5 w-5" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(categoria.id)}
-                      className="p-2 text-gray-400 hover:text-red-600 transition-colors"
-                      title="Eliminar"
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </button>
+
+                  {/* Acciones */}
+                  <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                    <div className="flex items-center space-x-1">
+                      <button
+                        onClick={() => handleMoveOrder(categoria, 'up')}
+                        disabled={index === 0}
+                        className="p-1.5 text-gray-400 hover:text-green-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        title="Mover arriba"
+                      >
+                        <MoveUp className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleMoveOrder(categoria, 'down')}
+                        disabled={index === categorias.length - 1}
+                        className="p-1.5 text-gray-400 hover:text-green-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        title="Mover abajo"
+                      >
+                        <MoveDown className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <button
+                        onClick={() => handleToggleActiva(categoria)}
+                        className={`p-1.5 transition-colors ${
+                          categoria.activa
+                            ? 'text-green-600 hover:text-green-700'
+                            : 'text-gray-400 hover:text-gray-600'
+                        }`}
+                        title={categoria.activa ? 'Desactivar' : 'Activar'}
+                      >
+                        {categoria.activa ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                      </button>
+                      <button
+                        onClick={() => handleEdit(categoria)}
+                        className="p-1.5 text-gray-400 hover:text-green-600 transition-colors"
+                        title="Editar"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(categoria.id)}
+                        className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
+                        title="Eliminar"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       )}
     </div>
   );
 }
-

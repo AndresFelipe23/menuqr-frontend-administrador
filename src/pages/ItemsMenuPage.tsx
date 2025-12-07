@@ -19,6 +19,9 @@ import {
   Flame,
   Wheat,
   Star,
+  MoveUp,
+  MoveDown,
+  Filter,
 } from 'lucide-react';
 
 export default function ItemsMenuPage() {
@@ -280,6 +283,7 @@ export default function ItemsMenuPage() {
       adicionesIds: item.adiciones?.map(a => a.id) || [],
     });
     setShowForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDelete = async (id: string) => {
@@ -343,6 +347,40 @@ export default function ItemsMenuPage() {
     return categorias.find(c => c.id === categoriaId)?.nombre || 'Sin categoría';
   };
 
+  const handleMoveOrder = async (item: ItemMenuConAdiciones, direction: 'up' | 'down') => {
+    const itemsMismaCategoria = items.filter(i => i.categoriaId === item.categoriaId).sort((a, b) => a.ordenVisualizacion - b.ordenVisualizacion);
+    const currentIndex = itemsMismaCategoria.findIndex(i => i.id === item.id);
+    if (currentIndex === -1) return;
+
+    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    if (newIndex < 0 || newIndex >= itemsMismaCategoria.length) return;
+
+    const targetItem = itemsMismaCategoria[newIndex];
+    const newOrder = targetItem.ordenVisualizacion;
+
+    try {
+      await itemsMenuService.actualizar(item.id, { ordenVisualizacion: newOrder });
+      await itemsMenuService.actualizar(targetItem.id, { ordenVisualizacion: item.ordenVisualizacion });
+      loadItems();
+    } catch (err: any) {
+      setError(err.message || 'Error al cambiar el orden');
+    }
+  };
+
+  const getTotalDisponibles = () => {
+    return items.filter(i => i.disponible).length;
+  };
+
+  const getTotalDestacados = () => {
+    return items.filter(i => i.destacado).length;
+  };
+
+  const getPrecioPromedio = () => {
+    if (items.length === 0) return 0;
+    const suma = items.reduce((sum, item) => sum + item.precio, 0);
+    return suma / items.length;
+  };
+
   if (!user?.restauranteId) {
     return (
       <div className="p-6">
@@ -355,48 +393,129 @@ export default function ItemsMenuPage() {
 
   return (
     <div className="p-6">
-      {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Items del Menú</h1>
-            <p className="mt-1 text-sm text-gray-500">Gestiona los platos y productos de tu menú</p>
+      {/* Header mejorado */}
+      <div className="mb-8">
+        <div className="bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 rounded-xl border border-green-100 p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="flex-shrink-0">
+                <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <Utensils className="h-7 w-7 text-white" />
+                </div>
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+                  Items del Menú
+                  {items.length > 0 && !loading && (
+                    <span className="ml-3 px-3 py-1 text-sm font-semibold bg-green-100 text-green-700 rounded-full">
+                      {items.length}
+                    </span>
+                  )}
+                </h1>
+                <p className="mt-2 text-sm text-gray-600">
+                  Gestiona los platos y productos de tu menú
+                </p>
+              </div>
+            </div>
+            {!showForm && (
+              <button
+                onClick={() => {
+                  setShowForm(true);
+                  setEditingItem(null);
+                  resetForm();
+                }}
+                className="inline-flex items-center px-5 py-3 border border-transparent rounded-xl shadow-lg text-sm font-semibold text-white bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all transform hover:scale-105"
+              >
+                <Plus className="h-5 w-5 mr-2" />
+                Nuevo Item
+              </button>
+            )}
           </div>
-          {!showForm && (
-            <button
-              onClick={() => {
-                setShowForm(true);
-                setEditingItem(null);
-                resetForm();
-              }}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-            >
-              <Plus className="h-5 w-5 mr-2" />
-              Nuevo Item
-            </button>
-          )}
         </div>
       </div>
 
-      {/* Filtro por categoría */}
+      {/* Estadísticas */}
+      {items.length > 0 && !loading && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0 p-2 bg-blue-100 rounded-lg">
+                <Utensils className="h-5 w-5 text-blue-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Total Items</p>
+                <p className="text-2xl font-semibold text-gray-900">{items.length}</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0 p-2 bg-green-100 rounded-lg">
+                <Eye className="h-5 w-5 text-green-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Disponibles</p>
+                <p className="text-2xl font-semibold text-gray-900">{getTotalDisponibles()}</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0 p-2 bg-yellow-100 rounded-lg">
+                <Star className="h-5 w-5 text-yellow-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Destacados</p>
+                <p className="text-2xl font-semibold text-gray-900">{getTotalDestacados()}</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0 p-2 bg-purple-100 rounded-lg">
+                <DollarSign className="h-5 w-5 text-purple-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Precio Promedio</p>
+                <p className="text-2xl font-semibold text-gray-900">${getPrecioPromedio().toFixed(2)}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Filtro por categoría mejorado */}
       {!showForm && categorias.length > 0 && (
-        <div className="mb-4">
-          <label htmlFor="filtroCategoria" className="block text-sm font-medium text-gray-700 mb-2">
-            Filtrar por categoría
-          </label>
-          <select
-            id="filtroCategoria"
-            value={filtroCategoria}
-            onChange={(e) => setFiltroCategoria(e.target.value)}
-            className="block w-full sm:w-64 px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 bg-white sm:text-sm transition-colors"
-          >
-            <option value="">Todas las categorías</option>
-            {categorias.map((categoria) => (
-              <option key={categoria.id} value={categoria.id}>
-                {categoria.nombre}
-              </option>
-            ))}
-          </select>
+        <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="flex items-center space-x-3">
+            <Filter className="h-5 w-5 text-gray-400" />
+            <div className="flex-1">
+              <label htmlFor="filtroCategoria" className="block text-sm font-medium text-gray-700 mb-2">
+                Filtrar por categoría
+              </label>
+              <select
+                id="filtroCategoria"
+                value={filtroCategoria}
+                onChange={(e) => setFiltroCategoria(e.target.value)}
+                className="block w-full sm:w-64 px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 bg-white sm:text-sm transition-colors"
+              >
+                <option value="">Todas las categorías</option>
+                {categorias.map((categoria) => (
+                  <option key={categoria.id} value={categoria.id}>
+                    {categoria.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {filtroCategoria && (
+              <button
+                onClick={() => setFiltroCategoria('')}
+                className="px-3 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                Limpiar filtro
+              </button>
+            )}
+          </div>
         </div>
       )}
 
@@ -451,7 +570,7 @@ export default function ItemsMenuPage() {
                   required
                   value={formData.categoriaId}
                   onChange={handleChange}
-                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 bg-white sm:text-sm transition-colors"
+                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 bg-white sm:text-sm transition-colors"
                   disabled={loadingCategorias}
                 >
                   <option value="">Selecciona una categoría</option>
@@ -474,7 +593,7 @@ export default function ItemsMenuPage() {
                   required
                   value={formData.nombre}
                   onChange={handleChange}
-                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
+                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
                   placeholder="Ej: Pollo a la Plancha"
                 />
               </div>
@@ -489,7 +608,7 @@ export default function ItemsMenuPage() {
                   rows={3}
                   value={formData.descripcion || ''}
                   onChange={handleChange}
-                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
+                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
                   placeholder="Descripción del plato..."
                 />
               </div>
@@ -511,7 +630,7 @@ export default function ItemsMenuPage() {
                     step="0.01"
                     value={formData.precio || ''}
                     onChange={handleChange}
-                    className="block w-full pl-10 px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
+                    className="block w-full pl-10 px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
                     placeholder="0.00"
                   />
                 </div>
@@ -528,7 +647,7 @@ export default function ItemsMenuPage() {
                   min="0"
                   value={formData.calorias || ''}
                   onChange={handleChange}
-                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
+                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
                   placeholder="Ej: 350"
                 />
               </div>
@@ -548,7 +667,7 @@ export default function ItemsMenuPage() {
                     min="0"
                     value={formData.tiempoPreparacion || ''}
                     onChange={handleChange}
-                    className="block w-full pl-10 px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
+                    className="block w-full pl-10 px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
                     placeholder="Ej: 20"
                   />
                 </div>
@@ -570,7 +689,7 @@ export default function ItemsMenuPage() {
                     max="5"
                     value={formData.nivelPicante || 0}
                     onChange={handleChange}
-                    className="block w-full pl-10 px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
+                    className="block w-full pl-10 px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
                   />
                 </div>
               </div>
@@ -601,7 +720,7 @@ export default function ItemsMenuPage() {
                   id="alergenosInput"
                   value={alergenosInput}
                   onChange={handleAlergenosChange}
-                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
+                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
                   placeholder="Ej: Gluten, Lactosa, Frutos secos"
                 />
                 <p className="mt-1 text-xs text-gray-500">Separa los alérgenos con comas</p>
@@ -613,7 +732,7 @@ export default function ItemsMenuPage() {
                 </label>
                 {loadingAdiciones ? (
                   <div className="flex items-center justify-center py-8">
-                    <Loader2 className="animate-spin h-6 w-6 text-indigo-600" />
+                    <Loader2 className="animate-spin h-6 w-6 text-green-600" />
                     <span className="ml-2 text-sm text-gray-500">Cargando adiciones...</span>
                   </div>
                 ) : adiciones.length === 0 ? (
@@ -631,15 +750,15 @@ export default function ItemsMenuPage() {
                           key={adicion.id}
                           className={`relative flex items-center p-3 rounded-lg border-2 cursor-pointer transition-colors ${
                             isSelected
-                              ? 'border-indigo-500 bg-indigo-50'
-                              : 'border-gray-200 bg-white hover:border-indigo-300'
+                              ? 'border-green-500 bg-green-50'
+                              : 'border-gray-200 bg-white hover:border-green-300'
                           }`}
                         >
                           <input
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => handleAdicionToggle(adicion.id)}
-                            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                            className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                           />
                           <div className="ml-3 flex-1 min-w-0">
                             <div className="flex items-center justify-between">
@@ -647,7 +766,7 @@ export default function ItemsMenuPage() {
                                 {adicion.nombre}
                               </span>
                               {adicion.precio > 0 && (
-                                <span className="ml-2 text-xs font-semibold text-indigo-600 whitespace-nowrap">
+                                <span className="ml-2 text-xs font-semibold text-green-600 whitespace-nowrap">
                                   +${adicion.precio.toFixed(2)}
                                 </span>
                               )}
@@ -671,13 +790,13 @@ export default function ItemsMenuPage() {
               </div>
 
               <div className="sm:col-span-2 grid grid-cols-2 gap-4">
-                <label className="relative flex items-center p-4 rounded-lg border-2 border-gray-200 hover:border-indigo-300 cursor-pointer transition-colors">
+                <label className="relative flex items-center p-4 rounded-lg border-2 border-gray-200 hover:border-green-300 cursor-pointer transition-colors">
                   <input
                     type="checkbox"
                     name="disponible"
                     checked={formData.disponible ?? true}
                     onChange={handleChange}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                   />
                   <div className="ml-3">
                     <span className="block text-sm font-medium text-gray-900">Disponible</span>
@@ -685,13 +804,13 @@ export default function ItemsMenuPage() {
                   </div>
                 </label>
 
-                <label className="relative flex items-center p-4 rounded-lg border-2 border-gray-200 hover:border-indigo-300 cursor-pointer transition-colors">
+                <label className="relative flex items-center p-4 rounded-lg border-2 border-gray-200 hover:border-green-300 cursor-pointer transition-colors">
                   <input
                     type="checkbox"
                     name="destacado"
                     checked={formData.destacado ?? false}
                     onChange={handleChange}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                   />
                   <div className="ml-3">
                     <span className="block text-sm font-medium text-gray-900">Destacado</span>
@@ -699,13 +818,13 @@ export default function ItemsMenuPage() {
                   </div>
                 </label>
 
-                <label className="relative flex items-center p-4 rounded-lg border-2 border-gray-200 hover:border-indigo-300 cursor-pointer transition-colors">
+                <label className="relative flex items-center p-4 rounded-lg border-2 border-gray-200 hover:border-green-300 cursor-pointer transition-colors">
                   <input
                     type="checkbox"
                     name="esVegetariano"
                     checked={formData.esVegetariano ?? false}
                     onChange={handleChange}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                   />
                   <div className="ml-3 flex items-center">
                     <Leaf className="h-4 w-4 text-green-600 mr-2" />
@@ -713,13 +832,13 @@ export default function ItemsMenuPage() {
                   </div>
                 </label>
 
-                <label className="relative flex items-center p-4 rounded-lg border-2 border-gray-200 hover:border-indigo-300 cursor-pointer transition-colors">
+                <label className="relative flex items-center p-4 rounded-lg border-2 border-gray-200 hover:border-green-300 cursor-pointer transition-colors">
                   <input
                     type="checkbox"
                     name="esVegano"
                     checked={formData.esVegano ?? false}
                     onChange={handleChange}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                   />
                   <div className="ml-3 flex items-center">
                     <Leaf className="h-4 w-4 text-green-700 mr-2" />
@@ -727,13 +846,13 @@ export default function ItemsMenuPage() {
                   </div>
                 </label>
 
-                <label className="relative flex items-center p-4 rounded-lg border-2 border-gray-200 hover:border-indigo-300 cursor-pointer transition-colors">
+                <label className="relative flex items-center p-4 rounded-lg border-2 border-gray-200 hover:border-green-300 cursor-pointer transition-colors">
                   <input
                     type="checkbox"
                     name="sinGluten"
                     checked={formData.sinGluten ?? false}
                     onChange={handleChange}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                   />
                   <div className="ml-3 flex items-center">
                     <Wheat className="h-4 w-4 text-amber-600 mr-2" />
@@ -741,13 +860,13 @@ export default function ItemsMenuPage() {
                   </div>
                 </label>
 
-                <label className="relative flex items-center p-4 rounded-lg border-2 border-gray-200 hover:border-indigo-300 cursor-pointer transition-colors">
+                <label className="relative flex items-center p-4 rounded-lg border-2 border-gray-200 hover:border-green-300 cursor-pointer transition-colors">
                   <input
                     type="checkbox"
                     name="esPicante"
                     checked={formData.esPicante ?? false}
                     onChange={handleChange}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                   />
                   <div className="ml-3 flex items-center">
                     <Flame className="h-4 w-4 text-red-600 mr-2" />
@@ -767,7 +886,7 @@ export default function ItemsMenuPage() {
                   min="0"
                   value={formData.ordenVisualizacion ?? ''}
                   onChange={handleChange}
-                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
+                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
                   placeholder="Auto"
                 />
               </div>
@@ -777,14 +896,14 @@ export default function ItemsMenuPage() {
               <button
                 type="button"
                 onClick={cancelForm}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {saving ? (
                   <>
@@ -802,16 +921,18 @@ export default function ItemsMenuPage() {
         </div>
       )}
 
-      {/* Lista de items */}
+      {/* Lista de items - Vista mejorada con cards */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="animate-spin h-8 w-8 text-indigo-600" />
+          <Loader2 className="animate-spin h-8 w-8 text-green-600" />
         </div>
       ) : itemsFiltrados.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
           <Utensils className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-4 text-sm font-medium text-gray-900">No hay items del menú</h3>
-          <p className="mt-2 text-sm text-gray-500">Comienza agregando tu primer plato.</p>
+          <p className="mt-2 text-sm text-gray-500">
+            {filtroCategoria ? 'No hay items en esta categoría' : 'Comienza agregando tu primer plato.'}
+          </p>
           <div className="mt-6">
             <button
               onClick={() => {
@@ -819,7 +940,7 @@ export default function ItemsMenuPage() {
                 setEditingItem(null);
                 resetForm();
               }}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
             >
               <Plus className="h-5 w-5 mr-2" />
               Nuevo Item
@@ -827,58 +948,90 @@ export default function ItemsMenuPage() {
           </div>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <ul className="divide-y divide-gray-200">
-            {itemsFiltrados.map((item) => (
-              <li key={item.id} className="p-4 hover:bg-gray-50 transition-colors">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start flex-1 min-w-0">
-                    {item.imagenUrl && (
-                      <div className="flex-shrink-0 mr-4">
-                        <img
-                          src={item.imagenUrl}
-                          alt={item.nombre}
-                          className="h-20 w-20 object-cover rounded-lg border border-gray-200"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                          }}
-                        />
+        <div>
+          {/* Grid de cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {itemsFiltrados.map((item, index) => {
+              const itemsMismaCategoria = itemsFiltrados.filter(i => i.categoriaId === item.categoriaId).sort((a, b) => a.ordenVisualizacion - b.ordenVisualizacion);
+              const itemIndex = itemsMismaCategoria.findIndex(i => i.id === item.id);
+              const canMoveUp = itemIndex > 0;
+              const canMoveDown = itemIndex < itemsMismaCategoria.length - 1;
+
+              return (
+                <div
+                  key={item.id}
+                  className={`bg-white rounded-lg shadow-sm border-2 transition-all hover:shadow-md overflow-hidden ${
+                    item.disponible ? 'border-gray-200' : 'border-gray-300 opacity-75'
+                  } ${item.destacado ? 'ring-2 ring-yellow-200' : ''}`}
+                >
+                  {/* Imagen del item */}
+                  {item.imagenUrl ? (
+                    <div className="h-48 w-full bg-gray-100 overflow-hidden relative">
+                      <img
+                        src={item.imagenUrl}
+                        alt={item.nombre}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                          (e.target as HTMLImageElement).parentElement!.innerHTML = '<div class="w-full h-full bg-gradient-to-br from-green-100 to-blue-100 flex items-center justify-center"><svg class="h-16 w-16 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg></div>';
+                        }}
+                      />
+                      {item.destacado && (
+                        <div className="absolute top-2 right-2 bg-yellow-400 rounded-full p-1">
+                          <Star className="h-4 w-4 text-yellow-900 fill-yellow-900" />
+                        </div>
+                      )}
+                      {!item.disponible && (
+                        <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                          <span className="text-white font-semibold text-sm">No disponible</span>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="h-48 w-full bg-gradient-to-br from-green-100 to-blue-100 flex items-center justify-center relative">
+                      <Utensils className="h-16 w-16 text-green-400" />
+                      {item.destacado && (
+                        <div className="absolute top-2 right-2 bg-yellow-400 rounded-full p-1">
+                          <Star className="h-4 w-4 text-yellow-900 fill-yellow-900" />
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="p-5">
+                    {/* Header del card */}
+                    <div className="mb-3">
+                      <div className="flex items-start justify-between">
+                        <h3 className="text-lg font-semibold text-gray-900 flex-1">{item.nombre}</h3>
                       </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {item.nombre}
-                        </p>
-                        {item.destacado && (
-                          <Star className="ml-2 h-4 w-4 text-yellow-500 fill-yellow-500" />
-                        )}
-                        {!item.disponible && (
-                          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                            No disponible
-                          </span>
-                        )}
-                      </div>
-                      <div className="mt-1 flex items-center text-sm text-gray-500 space-x-4">
-                        <div className="flex items-center">
+                      <div className="mt-2 flex items-center space-x-3 text-sm">
+                        <div className="flex items-center font-bold text-green-600">
                           <DollarSign className="h-4 w-4 mr-1" />
-                          <span>${item.precio.toFixed(2)}</span>
+                          ${item.precio.toFixed(2)}
                         </div>
                         {item.calorias && (
-                          <span>{item.calorias} cal</span>
+                          <span className="text-gray-500">{item.calorias} cal</span>
                         )}
                         {item.tiempoPreparacion && (
-                          <div className="flex items-center">
-                            <Clock className="h-4 w-4 mr-1" />
+                          <div className="flex items-center text-gray-500">
+                            <Clock className="h-3 w-3 mr-1" />
                             <span>{item.tiempoPreparacion} min</span>
                           </div>
                         )}
-                        <span className="text-xs text-gray-400">{getCategoriaNombre(item.categoriaId)}</span>
                       </div>
-                      {item.descripcion && (
-                        <p className="mt-1 text-sm text-gray-600 line-clamp-2">{item.descripcion}</p>
-                      )}
-                      <div className="mt-2 flex items-center flex-wrap gap-2">
+                      <span className="inline-block mt-2 text-xs font-medium text-purple-600 bg-purple-50 px-2 py-1 rounded">
+                        {getCategoriaNombre(item.categoriaId)}
+                      </span>
+                    </div>
+
+                    {/* Descripción */}
+                    {item.descripcion && (
+                      <p className="text-sm text-gray-600 line-clamp-2 mb-3">{item.descripcion}</p>
+                    )}
+
+                    {/* Características */}
+                    {(item.esVegetariano || item.esVegano || item.sinGluten || item.esPicante) && (
+                      <div className="flex items-center flex-wrap gap-2 mb-3">
                         {item.esVegetariano && (
                           <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
                             <Leaf className="h-3 w-3 mr-1" />
@@ -903,45 +1056,69 @@ export default function ItemsMenuPage() {
                             Picante {item.nivelPicante}/5
                           </span>
                         )}
-                        {item.adiciones && item.adiciones.length > 0 && (
-                          <span className="text-xs text-gray-500">
-                            {item.adiciones.length} adición(es)
-                          </span>
-                        )}
+                      </div>
+                    )}
+
+                    {/* Adiciones */}
+                    {item.adiciones && item.adiciones.length > 0 && (
+                      <div className="mb-3 text-xs text-gray-500">
+                        {item.adiciones.length} adición(es) disponible(s)
+                      </div>
+                    )}
+
+                    {/* Acciones */}
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                      <div className="flex items-center space-x-1">
+                        <button
+                          onClick={() => handleMoveOrder(item, 'up')}
+                          disabled={!canMoveUp}
+                          className="p-1.5 text-gray-400 hover:text-green-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          title="Mover arriba"
+                        >
+                          <MoveUp className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleMoveOrder(item, 'down')}
+                          disabled={!canMoveDown}
+                          className="p-1.5 text-gray-400 hover:text-green-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          title="Mover abajo"
+                        >
+                          <MoveDown className="h-4 w-4" />
+                        </button>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <button
+                          onClick={() => handleToggleDisponible(item)}
+                          className={`p-1.5 transition-colors ${
+                            item.disponible
+                              ? 'text-green-600 hover:text-green-700'
+                              : 'text-gray-400 hover:text-gray-600'
+                          }`}
+                          title={item.disponible ? 'Marcar como no disponible' : 'Marcar como disponible'}
+                        >
+                          {item.disponible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                        </button>
+                        <button
+                          onClick={() => handleEdit(item)}
+                          className="p-1.5 text-gray-400 hover:text-green-600 transition-colors"
+                          title="Editar"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
+                          title="Eliminar"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2 ml-4">
-                    <button
-                      onClick={() => handleToggleDisponible(item)}
-                      className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-                      title={item.disponible ? 'Marcar como no disponible' : 'Marcar como disponible'}
-                    >
-                      {item.disponible ? (
-                        <Eye className="h-5 w-5" />
-                      ) : (
-                        <EyeOff className="h-5 w-5" />
-                      )}
-                    </button>
-                    <button
-                      onClick={() => handleEdit(item)}
-                      className="p-2 text-gray-400 hover:text-indigo-600 transition-colors"
-                      title="Editar"
-                    >
-                      <Edit2 className="h-5 w-5" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="p-2 text-gray-400 hover:text-red-600 transition-colors"
-                      title="Eliminar"
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </button>
-                  </div>
                 </div>
-              </li>
-            ))}
-          </ul>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

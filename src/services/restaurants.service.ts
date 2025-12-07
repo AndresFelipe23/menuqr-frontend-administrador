@@ -42,6 +42,14 @@ class RestaurantsService {
   }
 
   /**
+   * Obtener todos los restaurantes activos (público, no requiere autenticación)
+   */
+  async obtenerTodosPublicos(): Promise<Restaurante[]> {
+    const response = await apiGet<Restaurante[]>(`/restaurants/public`);
+    return extractData(response);
+  }
+
+  /**
    * Obtener un restaurante por slug (público)
    */
   async obtenerPorSlug(slug: string): Promise<Restaurante> {

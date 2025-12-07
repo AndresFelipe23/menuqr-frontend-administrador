@@ -121,7 +121,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
           collapsed ? 'md:w-20' : 'md:w-72'
         }`}
       >
-        <div className="flex flex-col flex-grow bg-white/80 backdrop-blur-xl border-r border-white/20 shadow-2xl overflow-hidden">
+        <div className="flex flex-col flex-grow bg-white/80 backdrop-blur-xl border-r border-gray-200/50 overflow-hidden">
           {/* Header con logo y toggle */}
           <div className="flex items-center justify-between px-4 py-5 border-b border-gray-200/50">
             {!collapsed ? (
@@ -256,7 +256,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
           />
           
           {/* Sidebar móvil */}
-          <aside className="md:hidden fixed inset-y-0 left-0 z-50 w-72 bg-white/95 backdrop-blur-xl shadow-2xl transform transition-transform duration-300 ease-in-out">
+          <aside className="md:hidden fixed inset-y-0 left-0 z-50 w-72 bg-white/95 backdrop-blur-xl border-r border-gray-200/50 transform transition-transform duration-300 ease-in-out">
             <div className="flex flex-col h-full">
               {/* Header móvil */}
               <div className="flex items-center justify-between px-4 py-5 border-b border-gray-200/50">

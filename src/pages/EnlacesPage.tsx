@@ -15,6 +15,10 @@ import {
   CheckCircle2,
   GripVertical,
   TrendingUp,
+  MoveUp,
+  MoveDown,
+  Globe,
+  BarChart3,
 } from 'lucide-react';
 import ImageUpload from '../components/ImageUpload';
 
@@ -22,8 +26,8 @@ import ImageUpload from '../components/ImageUpload';
 const ICONOS_REDES_SOCIALES: Record<string, string> = {
   facebook: 'https://cdn.simpleicons.org/facebook/1877F2',
   instagram: 'https://cdn.simpleicons.org/instagram/E4405F',
-  twitter: 'https://cdn.simpleicons.org/twitter/1DA1F2', // Mantener para compatibilidad
-  x: 'https://cdn.simpleicons.org/x/000000', // X (anteriormente Twitter)
+  twitter: 'https://cdn.simpleicons.org/twitter/1DA1F2',
+  x: 'https://cdn.simpleicons.org/x/000000',
   whatsapp: 'https://cdn.simpleicons.org/whatsapp/25D366',
   youtube: 'https://cdn.simpleicons.org/youtube/FF0000',
   tiktok: 'https://cdn.simpleicons.org/tiktok/000000',
@@ -91,30 +95,23 @@ export default function EnlacesPage() {
       if (type === 'checkbox') {
         newValue = checked;
       } else if (type === 'number') {
-        // Para inputs tipo number, convertir a número o undefined si está vacío
         const numValue = value === '' ? undefined : parseInt(value, 10);
         newValue = isNaN(numValue!) ? undefined : numValue;
       } else {
-        // Para otros campos, mantener como string o undefined si está vacío
         newValue = value === '' ? undefined : value;
       }
 
-      // Si se cambia el tipo de icono, asignar automáticamente la URL del icono
       if (name === 'tipoIcono' && value && value !== 'custom') {
         const iconoUrl = ICONOS_REDES_SOCIALES[value];
         if (iconoUrl) {
-          console.log(`Asignando icono para ${value}: ${iconoUrl}`);
           return {
             ...prev,
             [name]: newValue,
             iconoUrl: iconoUrl,
           };
-        } else {
-          console.warn(`No se encontró icono para: ${value}`);
         }
       }
 
-      // Si se selecciona "custom", limpiar el iconoUrl para que el usuario pueda ingresar uno personalizado
       if (name === 'tipoIcono' && value === 'custom') {
         return {
           ...prev,
@@ -139,14 +136,12 @@ export default function EnlacesPage() {
       setError(null);
       setSuccess(null);
 
-      // Preparar datos para enviar, convirtiendo tipos y limpiando campos vacíos
       const datosEnviar: any = {
         restauranteId: user.restauranteId,
         titulo: (formData.titulo || '').trim(),
         url: (formData.url || '').trim(),
       };
 
-      // Solo incluir campos opcionales si tienen valor
       if (formData.iconoUrl?.trim()) {
         datosEnviar.iconoUrl = formData.iconoUrl.trim();
       }
@@ -155,7 +150,6 @@ export default function EnlacesPage() {
         datosEnviar.tipoIcono = formData.tipoIcono.trim();
       }
 
-      // Convertir ordenVisualizacion a número solo si tiene valor
       if (formData.ordenVisualizacion !== undefined && formData.ordenVisualizacion !== null) {
         const ordenNum = typeof formData.ordenVisualizacion === 'number' 
           ? formData.ordenVisualizacion 
@@ -164,22 +158,18 @@ export default function EnlacesPage() {
           datosEnviar.ordenVisualizacion = ordenNum;
         }
       } else if (!editingEnlace) {
-        // Solo asignar orden automático al crear, no al actualizar
         datosEnviar.ordenVisualizacion = enlaces.length + 1;
       }
 
-      // Incluir activo solo si es diferente del valor por defecto o si está editando
       if (formData.activo !== undefined) {
         datosEnviar.activo = formData.activo;
       }
 
       if (editingEnlace) {
-        // Actualizar - remover restauranteId del objeto para actualizar
         const { restauranteId, ...datosActualizar } = datosEnviar;
         await enlacesService.actualizar(editingEnlace.id, datosActualizar);
         setSuccess('Enlace actualizado exitosamente');
       } else {
-        // Crear
         await enlacesService.crear(datosEnviar);
         setSuccess('Enlace creado exitosamente');
       }
@@ -206,6 +196,7 @@ export default function EnlacesPage() {
       activo: enlace.activo,
     });
     setShowForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDelete = async (id: string) => {
@@ -232,6 +223,25 @@ export default function EnlacesPage() {
     }
   };
 
+  const handleMoveOrder = async (enlace: EnlaceRestaurante, direction: 'up' | 'down') => {
+    const currentIndex = enlaces.findIndex(e => e.id === enlace.id);
+    if (currentIndex === -1) return;
+
+    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    if (newIndex < 0 || newIndex >= enlaces.length) return;
+
+    const targetEnlace = enlaces[newIndex];
+    const newOrder = targetEnlace.ordenVisualizacion;
+
+    try {
+      await enlacesService.actualizar(enlace.id, { ordenVisualizacion: newOrder });
+      await enlacesService.actualizar(targetEnlace.id, { ordenVisualizacion: enlace.ordenVisualizacion });
+      loadEnlaces();
+    } catch (err: any) {
+      setError(err.message || 'Error al cambiar el orden');
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       titulo: '',
@@ -249,6 +259,14 @@ export default function EnlacesPage() {
     resetForm();
   };
 
+  const getTotalClics = () => {
+    return enlaces.reduce((sum, enlace) => sum + (enlace.contadorClics || 0), 0);
+  };
+
+  const getEnlacesActivos = () => {
+    return enlaces.filter(e => e.activo);
+  };
+
   if (!user?.restauranteId) {
     return (
       <div className="p-6">
@@ -262,11 +280,23 @@ export default function EnlacesPage() {
   return (
     <div className="p-6">
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Enlaces del Restaurante</h1>
-            <p className="mt-1 text-sm text-gray-500">Gestiona los enlaces sociales y de contacto de tu restaurante</p>
+      <div className="bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 rounded-2xl p-6 mb-8 border border-green-100">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-lg">
+              <Link2 className="h-14 w-14 text-white" />
+            </div>
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-3xl font-bold text-gray-900">Enlaces del Restaurante</h1>
+                {!loading && enlaces.length > 0 && (
+                  <span className="px-3 py-1 bg-green-600 text-white text-sm font-semibold rounded-full">
+                    {enlaces.length}
+                  </span>
+                )}
+              </div>
+              <p className="text-gray-600">Gestiona los enlaces sociales y de contacto de tu restaurante</p>
+            </div>
           </div>
           {!showForm && (
             <button
@@ -275,7 +305,7 @@ export default function EnlacesPage() {
                 setEditingEnlace(null);
                 resetForm();
               }}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+              className="inline-flex items-center px-5 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
             >
               <Plus className="h-5 w-5 mr-2" />
               Nuevo Enlace
@@ -284,17 +314,56 @@ export default function EnlacesPage() {
         </div>
       </div>
 
+      {/* Estadísticas */}
+      {enlaces.length > 0 && !loading && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0 p-2 bg-green-100 rounded-lg">
+                <Link2 className="h-5 w-5 text-green-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Total de Enlaces</p>
+                <p className="text-2xl font-semibold text-gray-900">{enlaces.length}</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0 p-2 bg-blue-100 rounded-lg">
+                <Eye className="h-5 w-5 text-blue-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Enlaces Activos</p>
+                <p className="text-2xl font-semibold text-gray-900">{getEnlacesActivos().length}</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0 p-2 bg-orange-100 rounded-lg">
+                <TrendingUp className="h-5 w-5 text-orange-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Total de Clics</p>
+                <p className="text-2xl font-semibold text-gray-900">{getTotalClics()}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Mensajes de éxito/error */}
       {error && (
         <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start">
-          <AlertCircle className="h-5 w-5 text-red-600 mr-3 mt-0.5" />
+          <AlertCircle className="h-5 w-5 text-red-600 mr-3 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
             <p className="text-sm font-medium text-red-800">Error</p>
             <p className="text-sm text-red-700">{error}</p>
           </div>
           <button
             onClick={() => setError(null)}
-            className="text-red-400 hover:text-red-600"
+            className="text-red-400 hover:text-red-600 ml-2"
           >
             ×
           </button>
@@ -303,14 +372,14 @@ export default function EnlacesPage() {
 
       {success && (
         <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-start">
-          <CheckCircle2 className="h-5 w-5 text-green-600 mr-3 mt-0.5" />
+          <CheckCircle2 className="h-5 w-5 text-green-600 mr-3 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
             <p className="text-sm font-medium text-green-800">Éxito</p>
             <p className="text-sm text-green-700">{success}</p>
           </div>
           <button
             onClick={() => setSuccess(null)}
-            className="text-green-400 hover:text-green-600"
+            className="text-green-400 hover:text-green-600 ml-2"
           >
             ×
           </button>
@@ -336,7 +405,7 @@ export default function EnlacesPage() {
                   required
                   value={formData.titulo}
                   onChange={handleChange}
-                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
+                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
                   placeholder="Ej: Síguenos en Facebook"
                 />
               </div>
@@ -352,7 +421,7 @@ export default function EnlacesPage() {
                   required
                   value={formData.url}
                   onChange={handleChange}
-                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
+                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
                   placeholder="https://facebook.com/tu-restaurante"
                 />
               </div>
@@ -366,7 +435,7 @@ export default function EnlacesPage() {
                   id="tipoIcono"
                   value={formData.tipoIcono || ''}
                   onChange={handleChange}
-                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 bg-white sm:text-sm transition-colors"
+                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 bg-white sm:text-sm transition-colors"
                 >
                   <option value="">Seleccionar...</option>
                   <option value="facebook">Facebook</option>
@@ -388,8 +457,9 @@ export default function EnlacesPage() {
                   <option value="custom">Personalizado</option>
                 </select>
                 {formData.tipoIcono && formData.tipoIcono !== 'custom' && (
-                  <p className="mt-1 text-xs text-gray-500">
-                    ✓ Icono predefinido asignado automáticamente
+                  <p className="mt-1 text-xs text-green-600 flex items-center">
+                    <CheckCircle2 className="h-3 w-3 mr-1" />
+                    Icono predefinido asignado automáticamente
                   </p>
                 )}
               </div>
@@ -450,19 +520,19 @@ export default function EnlacesPage() {
                   min="0"
                   value={formData.ordenVisualizacion ?? ''}
                   onChange={handleChange}
-                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
+                  className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 placeholder-gray-400 sm:text-sm transition-colors"
                   placeholder="Auto (siguiente orden disponible)"
                 />
               </div>
 
               <div className="flex items-end">
-                <label className="relative flex items-center p-4 rounded-lg border-2 border-gray-200 hover:border-indigo-300 cursor-pointer transition-colors w-full">
+                <label className="relative flex items-center p-4 rounded-lg border-2 border-gray-200 hover:border-green-300 cursor-pointer transition-colors w-full">
                   <input
                     type="checkbox"
                     name="activo"
                     checked={formData.activo ?? true}
                     onChange={handleChange}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                   />
                   <div className="ml-3">
                     <span className="block text-sm font-medium text-gray-900">Enlace Activo</span>
@@ -476,14 +546,14 @@ export default function EnlacesPage() {
               <button
                 type="button"
                 onClick={cancelForm}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {saving ? (
                   <>
@@ -501,10 +571,10 @@ export default function EnlacesPage() {
         </div>
       )}
 
-      {/* Lista de enlaces */}
+      {/* Lista de enlaces - Vista mejorada con cards */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="animate-spin h-8 w-8 text-indigo-600" />
+          <Loader2 className="animate-spin h-8 w-8 text-green-600" />
         </div>
       ) : enlaces.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
@@ -518,7 +588,7 @@ export default function EnlacesPage() {
                 setEditingEnlace(null);
                 resetForm();
               }}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
             >
               <Plus className="h-5 w-5 mr-2" />
               Nuevo Enlace
@@ -526,91 +596,176 @@ export default function EnlacesPage() {
           </div>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <ul className="divide-y divide-gray-200">
-            {enlaces.map((enlace) => (
-              <li key={enlace.id} className="p-4 hover:bg-gray-50 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center flex-1 min-w-0">
-                    <GripVertical className="h-5 w-5 text-gray-400 mr-3 flex-shrink-0" />
-                    {enlace.iconoUrl && (
-                      <div className="flex-shrink-0 mr-3">
-                        <img
-                          src={enlace.iconoUrl}
-                          alt={enlace.tipoIcono || 'Icono'}
-                          className="h-8 w-8 rounded object-contain"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                          }}
-                        />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center">
-                        <p className="text-sm font-medium text-gray-900 truncate">{enlace.titulo}</p>
-                        {!enlace.activo && (
-                          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                            Inactivo
-                          </span>
+        <div>
+          {/* Grid de cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            {enlaces.map((enlace, index) => (
+              <div
+                key={enlace.id}
+                className={`bg-white rounded-lg shadow-sm border-2 transition-all hover:shadow-md ${
+                  enlace.activo ? 'border-gray-200' : 'border-gray-300 opacity-75'
+                }`}
+              >
+                <div className="p-5">
+                  {/* Header del card */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center space-x-3 flex-1 min-w-0">
+                      {enlace.iconoUrl && (
+                        <div className="flex-shrink-0">
+                          <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden">
+                            <img
+                              src={enlace.iconoUrl}
+                              alt={enlace.tipoIcono || 'Icono'}
+                              className="h-8 w-8 object-contain"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-semibold text-gray-900 truncate">{enlace.titulo}</h3>
+                        {enlace.tipoIcono && (
+                          <p className="text-xs text-gray-500 capitalize">{enlace.tipoIcono}</p>
                         )}
                       </div>
-                      <div className="mt-1 flex items-center text-sm text-gray-500">
-                        <Link2 className="h-4 w-4 mr-1 flex-shrink-0" />
-                        <a
-                          href={enlace.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="truncate hover:text-indigo-600 flex items-center"
-                        >
-                          {enlace.url}
-                          <ExternalLink className="h-3 w-3 ml-1 flex-shrink-0" />
-                        </a>
-                      </div>
-                      {enlace.tipoIcono && (
-                        <p className="mt-1 text-xs text-gray-500">Tipo: {enlace.tipoIcono}</p>
-                      )}
-                      <div className="mt-1 flex items-center text-xs text-gray-500">
-                        <TrendingUp className="h-3 w-3 mr-1" />
-                        <span>{enlace.contadorClics} clics</span>
-                        <span className="mx-2">•</span>
-                        <span>Orden: {enlace.ordenVisualizacion}</span>
-                      </div>
+                    </div>
+                    {!enlace.activo && (
+                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
+                        <EyeOff className="h-3 w-3 mr-1" />
+                        Inactivo
+                      </span>
+                    )}
+                  </div>
+
+                  {/* URL */}
+                  <div className="mb-4">
+                    <a
+                      href={enlace.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-gray-600 hover:text-green-600 flex items-center truncate"
+                    >
+                      <Globe className="h-3 w-3 mr-1 flex-shrink-0" />
+                      <span className="truncate">{enlace.url}</span>
+                      <ExternalLink className="h-3 w-3 ml-1 flex-shrink-0" />
+                    </a>
+                  </div>
+
+                  {/* Estadísticas */}
+                  <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                    <div className="flex items-center text-xs text-gray-500">
+                      <TrendingUp className="h-3 w-3 mr-1" />
+                      <span>{enlace.contadorClics || 0} clics</span>
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      Orden: {enlace.ordenVisualizacion}
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2 ml-4">
-                    <button
-                      onClick={() => handleToggleActivo(enlace)}
-                      className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-                      title={enlace.activo ? 'Desactivar' : 'Activar'}
-                    >
-                      {enlace.activo ? (
-                        <Eye className="h-5 w-5" />
-                      ) : (
-                        <EyeOff className="h-5 w-5" />
-                      )}
-                    </button>
-                    <button
-                      onClick={() => handleEdit(enlace)}
-                      className="p-2 text-gray-400 hover:text-indigo-600 transition-colors"
-                      title="Editar"
-                    >
-                      <Edit2 className="h-5 w-5" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(enlace.id)}
-                      className="p-2 text-gray-400 hover:text-red-600 transition-colors"
-                      title="Eliminar"
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </button>
+
+                  {/* Acciones */}
+                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+                    <div className="flex items-center space-x-1">
+                      <button
+                        onClick={() => handleMoveOrder(enlace, 'up')}
+                        disabled={index === 0}
+                        className="p-1.5 text-gray-400 hover:text-green-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        title="Mover arriba"
+                      >
+                        <MoveUp className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleMoveOrder(enlace, 'down')}
+                        disabled={index === enlaces.length - 1}
+                        className="p-1.5 text-gray-400 hover:text-green-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        title="Mover abajo"
+                      >
+                        <MoveDown className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <button
+                        onClick={() => handleToggleActivo(enlace)}
+                        className={`p-1.5 transition-colors ${
+                          enlace.activo
+                            ? 'text-green-600 hover:text-green-700'
+                            : 'text-gray-400 hover:text-gray-600'
+                        }`}
+                        title={enlace.activo ? 'Desactivar' : 'Activar'}
+                      >
+                        {enlace.activo ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                      </button>
+                      <button
+                        onClick={() => handleEdit(enlace)}
+                        className="p-1.5 text-gray-400 hover:text-green-600 transition-colors"
+                        title="Editar"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(enlace.id)}
+                        className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
+                        title="Eliminar"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
+
+          {/* Vista previa de cómo se verá en público */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Vista Previa</h3>
+              <BarChart3 className="h-5 w-5 text-gray-400" />
+            </div>
+            <p className="text-sm text-gray-500 mb-4">
+              Así se verán tus enlaces en la página pública del restaurante:
+            </p>
+            <div className="space-y-2 max-w-md">
+              {getEnlacesActivos().slice(0, 3).map((enlace) => (
+                <div
+                  key={enlace.id}
+                  className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-green-300 transition-colors"
+                >
+                  {enlace.iconoUrl && (
+                    <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-white flex items-center justify-center border border-gray-200">
+                      <img
+                        src={enlace.iconoUrl}
+                        alt={enlace.titulo}
+                        className="h-6 w-6 object-contain"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">{enlace.titulo}</p>
+                    <p className="text-xs text-gray-500 truncate">
+                      {new URL(enlace.url).hostname.replace('www.', '')}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              {getEnlacesActivos().length === 0 && (
+                <p className="text-sm text-gray-400 text-center py-4">
+                  No hay enlaces activos para mostrar
+                </p>
+              )}
+              {getEnlacesActivos().length > 3 && (
+                <p className="text-xs text-gray-500 text-center py-2">
+                  +{getEnlacesActivos().length - 3} enlaces más
+                </p>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>
   );
 }
-

@@ -22,6 +22,7 @@ import {
   RotateCcw,
   RefreshCw,
   Store,
+  ExternalLink,
 } from 'lucide-react';
 
 export default function RestaurantPage() {
@@ -235,6 +236,21 @@ export default function RestaurantPage() {
     { id: 'negocio', name: 'Negocio', icon: Briefcase },
   ];
 
+  // Construir URL pública del restaurante
+  const getPublicUrl = () => {
+    if (!restaurante?.slug) return null;
+    // En desarrollo usa localhost:4321, en producción usar variable de entorno o dominio configurado
+    const clienteBaseUrl = import.meta.env.VITE_CLIENTE_URL || 'http://localhost:4321';
+    return `${clienteBaseUrl}/${restaurante.slug}`;
+  };
+
+  const handleViewPublic = () => {
+    const publicUrl = getPublicUrl();
+    if (publicUrl) {
+      window.open(publicUrl, '_blank', 'noopener,noreferrer');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -304,7 +320,7 @@ export default function RestaurantPage() {
               </div>
             )}
           </div>
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 flex flex-col gap-3">
             <div className="bg-white/20 backdrop-blur-xl rounded-xl p-5 border border-white/30 shadow-xl">
               <div className="text-sm text-green-100 mb-2 font-medium">Estado del Restaurante</div>
               <div className="flex items-center space-x-3">
@@ -312,6 +328,17 @@ export default function RestaurantPage() {
                 <span className="font-bold text-lg">{restaurante.activo ? 'Activo' : 'Inactivo'}</span>
               </div>
             </div>
+            {restaurante.slug && (
+              <button
+                type="button"
+                onClick={handleViewPublic}
+                className="inline-flex items-center justify-center gap-2 px-4 py-3 bg-white/20 backdrop-blur-xl rounded-xl border border-white/30 shadow-xl text-white font-semibold hover:bg-white/30 transition-all duration-200 hover:scale-105"
+                title="Ver vista pública del restaurante"
+              >
+                <ExternalLink className="h-5 w-5" />
+                <span>Ver Vista Pública</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

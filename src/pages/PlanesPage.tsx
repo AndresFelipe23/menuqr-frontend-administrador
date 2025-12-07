@@ -3,7 +3,7 @@
  */
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, Loader2, Crown, Zap, Gift, ArrowUp, CreditCard } from 'lucide-react';
+import { Check, Loader2, Crown, Zap, Gift, ArrowUp, CreditCard, Sparkles, Calendar, TrendingUp } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { suscripcionesService } from '../services/suscripciones.service';
 import StripePaymentForm from '../components/StripePaymentForm';
@@ -234,7 +234,7 @@ export default function PlanesPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="flex items-center space-x-2">
-          <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+          <Loader2 className="h-8 w-8 animate-spin text-green-600" />
           <span className="text-gray-600">Cargando...</span>
         </div>
       </div>
@@ -282,68 +282,99 @@ export default function PlanesPage() {
     : plans;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            {suscripcionActual && suscripcionActual.estado === 'active' 
-              ? 'Tu Plan Actual' 
-              : 'Elige tu Plan'}
-          </h1>
-          <p className="text-xl text-gray-600">
-            {suscripcionActual && suscripcionActual.estado === 'active'
-              ? 'Gestiona tu suscripción y actualiza a un plan superior'
-              : 'Selecciona el plan que mejor se adapte a las necesidades de tu restaurante'}
-          </p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header con gradiente verde */}
+      <div className="bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 border-b border-green-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="flex items-center justify-center gap-4 mb-6">
+            <div className="p-4 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-lg">
+              <Sparkles className="h-14 w-14 text-white" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                {suscripcionActual && suscripcionActual.estado === 'active' 
+                  ? 'Tu Plan Actual' 
+                  : 'Elige tu Plan'}
+              </h1>
+              <p className="text-lg text-gray-600">
+                {suscripcionActual && suscripcionActual.estado === 'active'
+                  ? 'Gestiona tu suscripción y actualiza a un plan superior'
+                  : 'Selecciona el plan que mejor se adapte a las necesidades de tu restaurante'}
+              </p>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
         {/* Mostrar plan actual si tiene suscripción activa */}
         {suscripcionActual && suscripcionActual.estado === 'active' && planActual && (
-          <div className="max-w-2xl mx-auto mb-12">
-            <div className="bg-white rounded-2xl border-2 border-indigo-600 shadow-xl p-8">
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-indigo-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  {(() => {
-                    const Icon = planActual.icon;
-                    return <Icon className="h-8 w-8 text-indigo-600" />;
-                  })()}
+          <div className="max-w-3xl mx-auto mb-12">
+            <div className="bg-white rounded-2xl border-2 border-green-500 shadow-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-8 py-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                      {(() => {
+                        const Icon = planActual.icon;
+                        return <Icon className="h-8 w-8 text-white" />;
+                      })()}
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-white mb-1">
+                        Plan {planActual.name}
+                      </h2>
+                      <p className="text-green-50">{planActual.description}</p>
+                    </div>
+                  </div>
+                  <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
+                    <span className="text-white font-semibold flex items-center gap-2">
+                      <Check className="h-5 w-5" />
+                      Activo
+                    </span>
+                  </div>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                  Plan {planActual.name}
-                </h2>
-                <p className="text-gray-600 mb-4">{planActual.description}</p>
-                <div className="inline-block bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-semibold mb-4">
-                  Activo
-                </div>
-                {suscripcionActual.finPeriodoActual && (
-                  <p className="text-sm text-gray-500">
-                    Renovación: {new Date(suscripcionActual.finPeriodoActual).toLocaleDateString('es-ES', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </p>
-                )}
               </div>
-              <ul className="space-y-3 mb-6">
-                {planActual.features.map((feature, index) => (
-                  <li key={index} className="flex items-start">
-                    <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700">{feature}</span>
-                  </li>
-                ))}
-              </ul>
+              <div className="p-8">
+                {suscripcionActual.finPeriodoActual && (
+                  <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex items-center gap-2 text-gray-600 mb-1">
+                      <Calendar className="h-5 w-5 text-green-600" />
+                      <span className="font-medium">Próxima renovación:</span>
+                    </div>
+                    <p className="text-gray-900 font-semibold">
+                      {new Date(suscripcionActual.finPeriodoActual).toLocaleDateString('es-ES', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </p>
+                  </div>
+                )}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {planActual.features.map((feature, index) => (
+                    <div key={index} className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                      <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                      <span className="text-gray-700">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         )}
 
         {/* Mostrar planes disponibles para actualizar */}
         {suscripcionActual && suscripcionActual.estado === 'active' && planesDisponibles.length > 0 && (
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Actualizar a un Plan Superior
-            </h2>
-            <p className="text-gray-600">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-3 px-4 py-2 bg-green-100 rounded-full mb-4">
+              <TrendingUp className="h-5 w-5 text-green-600" />
+              <h2 className="text-2xl font-bold text-gray-900">
+                Actualizar a un Plan Superior
+              </h2>
+            </div>
+            <p className="text-gray-600 text-lg">
               Mejora tu plan para acceder a más funcionalidades
             </p>
           </div>
@@ -351,16 +382,16 @@ export default function PlanesPage() {
 
         {/* Selector de período y método de pago (solo para planes de pago) */}
         {selectedPlan && selectedPlan !== 'free' && (
-          <div className="flex flex-col items-center gap-6 mb-8">
+          <div className="flex flex-col items-center gap-6 mb-12">
             {/* Selector de método de pago */}
-            <div className="bg-white rounded-lg p-1 border border-gray-200 inline-flex">
+            <div className="bg-white rounded-xl p-1.5 border-2 border-gray-200 inline-flex shadow-sm">
               <button
                 type="button"
                 onClick={() => setPaymentProvider('stripe')}
-                className={`px-6 py-2 rounded-md font-medium transition-all flex items-center gap-2 ${
+                className={`px-6 py-2.5 rounded-lg font-medium transition-all flex items-center gap-2 ${
                   paymentProvider === 'stripe'
-                    ? 'bg-indigo-600 text-white'
-                    : 'text-gray-700 hover:text-gray-900'
+                    ? 'bg-green-600 text-white shadow-md'
+                    : 'text-gray-700 hover:bg-gray-50'
                 }`}
               >
                 <CreditCard className="h-4 w-4" />
@@ -369,10 +400,10 @@ export default function PlanesPage() {
               <button
                 type="button"
                 onClick={() => setPaymentProvider('wompi')}
-                className={`px-6 py-2 rounded-md font-medium transition-all flex items-center gap-2 ${
+                className={`px-6 py-2.5 rounded-lg font-medium transition-all flex items-center gap-2 ${
                   paymentProvider === 'wompi'
-                    ? 'bg-indigo-600 text-white'
-                    : 'text-gray-700 hover:text-gray-900'
+                    ? 'bg-green-600 text-white shadow-md'
+                    : 'text-gray-700 hover:bg-gray-50'
                 }`}
               >
                 <CreditCard className="h-4 w-4" />
@@ -381,14 +412,14 @@ export default function PlanesPage() {
             </div>
 
             {/* Selector de período */}
-            <div className="bg-white rounded-lg p-1 border border-gray-200 inline-flex">
+            <div className="bg-white rounded-xl p-1.5 border-2 border-gray-200 inline-flex shadow-sm">
               <button
                 type="button"
                 onClick={() => setIsAnnual(false)}
-                className={`px-6 py-2 rounded-md font-medium transition-all ${
+                className={`px-6 py-2.5 rounded-lg font-medium transition-all ${
                   !isAnnual
-                    ? 'bg-indigo-600 text-white'
-                    : 'text-gray-700 hover:text-gray-900'
+                    ? 'bg-green-600 text-white shadow-md'
+                    : 'text-gray-700 hover:bg-gray-50'
                 }`}
               >
                 Mensual
@@ -396,15 +427,15 @@ export default function PlanesPage() {
               <button
                 type="button"
                 onClick={() => setIsAnnual(true)}
-                className={`px-6 py-2 rounded-md font-medium transition-all ${
+                className={`px-6 py-2.5 rounded-lg font-medium transition-all flex items-center gap-2 ${
                   isAnnual
-                    ? 'bg-indigo-600 text-white'
-                    : 'text-gray-700 hover:text-gray-900'
+                    ? 'bg-green-600 text-white shadow-md'
+                    : 'text-gray-700 hover:bg-gray-50'
                 }`}
               >
                 Anual
-                <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">
-                  Ahorra
+                <span className="text-xs bg-green-700 text-white px-2 py-0.5 rounded">
+                  Ahorra 17%
                 </span>
               </button>
             </div>
@@ -413,57 +444,63 @@ export default function PlanesPage() {
 
         {/* Grid de Planes */}
         {!selectedPlan && (
-          <div className={`grid grid-cols-1 ${planesDisponibles.length === 1 ? 'md:grid-cols-1 max-w-md mx-auto' : planesDisponibles.length === 2 ? 'md:grid-cols-2' : 'md:grid-cols-3'} gap-8 mb-8`}>
+          <div className={`grid grid-cols-1 ${planesDisponibles.length === 1 ? 'md:grid-cols-1 max-w-md mx-auto' : planesDisponibles.length === 2 ? 'md:grid-cols-2' : 'md:grid-cols-3'} gap-8`}>
             {planesDisponibles.map((plan) => {
               const Icon = plan.icon;
               return (
                 <div
                   key={plan.id}
-                  className={`relative rounded-2xl border-2 p-8 bg-white ${
+                  className={`relative rounded-2xl border-2 p-8 bg-white transition-all cursor-pointer hover:shadow-xl ${
                     plan.popular
-                      ? 'border-indigo-600 shadow-xl scale-105'
-                      : 'border-gray-200 hover:border-indigo-300'
-                  } transition-all cursor-pointer`}
+                      ? 'border-green-500 shadow-lg scale-105'
+                      : 'border-gray-200 hover:border-green-300'
+                  }`}
                   onClick={() => handlePlanSelect(plan.id)}
                 >
                   {plan.popular && (
-                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                      <span className="bg-indigo-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+                      <span className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-5 py-1.5 rounded-full text-sm font-semibold shadow-lg">
                         Más Popular
                       </span>
                     </div>
                   )}
                   <div className="text-center mb-6">
-                    <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                      <Icon className="h-6 w-6 text-indigo-600" />
+                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg ${
+                      plan.popular 
+                        ? 'bg-gradient-to-br from-green-500 to-emerald-600' 
+                        : plan.id === 'free'
+                        ? 'bg-gradient-to-br from-gray-400 to-gray-500'
+                        : 'bg-gradient-to-br from-green-400 to-emerald-500'
+                    }`}>
+                      <Icon className="h-8 w-8 text-white" />
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                    <h3 className="text-3xl font-bold text-gray-900 mb-2">
                       {plan.name}
                     </h3>
-                    <p className="text-gray-600 mb-4">{plan.description}</p>
+                    <p className="text-gray-600 mb-6">{plan.description}</p>
                     <div className="mb-2">
-                      <span className="text-4xl font-bold text-gray-900">
+                      <span className="text-5xl font-bold text-gray-900">
                         {plan.priceMonthly}
                       </span>
-                      <span className="text-gray-600">/mes</span>
+                      <span className="text-gray-600 text-lg">/mes</span>
                       <span className="text-sm text-gray-500 ml-1">USD</span>
                     </div>
                     {plan.priceAnnual !== '$0' && (
                       <div className="text-sm text-gray-500">
-                        o {plan.priceAnnual}/año USD
+                        o <span className="font-semibold">{plan.priceAnnual}</span>/año USD
                       </div>
                     )}
                   </div>
-                  <ul className="space-y-3 mb-8">
+                  <ul className="space-y-3 mb-8 min-h-[200px]">
                     {plan.features.map((feature, index) => (
-                      <li key={index} className="flex items-start">
-                        <Check className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
+                      <li key={index} className="flex items-start gap-2">
+                        <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
                         <span className="text-gray-700">{feature}</span>
                       </li>
                     ))}
                     {plan.limitations.map((limitation, index) => (
-                      <li key={index} className="flex items-start">
-                        <span className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5 text-gray-400">
+                      <li key={index} className="flex items-start gap-2 opacity-60">
+                        <span className="h-5 w-5 flex-shrink-0 mt-0.5 text-gray-400 flex items-center justify-center">
                           ×
                         </span>
                         <span className="text-gray-500 line-through">
@@ -473,12 +510,12 @@ export default function PlanesPage() {
                     ))}
                   </ul>
                   <button
-                    className={`w-full py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${
+                    className={`w-full py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg transform hover:scale-105 ${
                       plan.popular
-                        ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                        ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700'
                         : plan.id === 'free'
                         ? 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-                        : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
+                        : 'bg-green-100 text-green-700 hover:bg-green-200'
                     }`}
                   >
                     {suscripcionActual && suscripcionActual.estado === 'active' ? (
@@ -500,22 +537,22 @@ export default function PlanesPage() {
 
         {/* Formulario de Pago */}
         {selectedPlan && selectedPlan !== 'free' && (
-          <div className="max-w-2xl mx-auto">
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-              <div className="mb-6">
+          <div className="max-w-2xl mx-auto mt-12">
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+              <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-8 py-6">
                 <button
                   onClick={() => {
                     setSelectedPlan(null);
                     setError(null);
                   }}
-                  className="text-indigo-600 hover:text-indigo-700 font-medium mb-4"
+                  className="text-white hover:text-green-100 font-medium mb-4 flex items-center gap-2 transition-colors"
                 >
                   ← Volver a seleccionar plan
                 </button>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                <h2 className="text-2xl font-bold text-white mb-2">
                   Confirmar Suscripción {selectedPlan.toUpperCase()}
                 </h2>
-                <p className="text-gray-600">
+                <p className="text-green-50">
                   {isAnnual ? 'Plan Anual' : 'Plan Mensual'} -{' '}
                   {paymentProvider === 'wompi' ? (
                     selectedPlan === 'pro'
@@ -537,36 +574,38 @@ export default function PlanesPage() {
                 </p>
               </div>
 
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-                  {error}
-                </div>
-              )}
+              <div className="p-8">
+                {error && (
+                  <div className="bg-red-50 border-2 border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+                    {error}
+                  </div>
+                )}
 
-              {paymentProvider === 'stripe' ? (
-                <StripePaymentForm
-                  onSubmit={handlePaymentSubmit}
-                  onError={(err) => setError(err)}
-                  disabled={isProcessing}
-                />
-              ) : (
-                <WompiPaymentOption
-                  planType={selectedPlan}
-                  isAnnual={isAnnual}
-                  onSubmit={handlePaymentSubmit}
-                  onError={(err) => setError(err)}
-                  disabled={isProcessing}
-                />
-              )}
+                {paymentProvider === 'stripe' ? (
+                  <StripePaymentForm
+                    onSubmit={handlePaymentSubmit}
+                    onError={(err) => setError(err)}
+                    disabled={isProcessing}
+                  />
+                ) : (
+                  <WompiPaymentOption
+                    planType={selectedPlan}
+                    isAnnual={isAnnual}
+                    onSubmit={handlePaymentSubmit}
+                    onError={(err) => setError(err)}
+                    disabled={isProcessing}
+                  />
+                )}
+              </div>
             </div>
           </div>
         )}
 
         {/* Procesando plan FREE */}
         {selectedPlan === 'free' && isProcessing && (
-          <div className="text-center">
-            <Loader2 className="h-8 w-8 animate-spin text-indigo-600 mx-auto mb-4" />
-            <p className="text-gray-600">Activando plan FREE...</p>
+          <div className="text-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-green-600 mx-auto mb-4" />
+            <p className="text-gray-600 font-medium">Activando plan FREE...</p>
           </div>
         )}
       </div>
