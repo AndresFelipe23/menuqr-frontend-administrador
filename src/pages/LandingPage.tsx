@@ -10,7 +10,8 @@ import {
   LogIn,
   UserPlus,
   MapPin,
-  ExternalLink
+  ExternalLink,
+  X
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
@@ -20,6 +21,7 @@ import type { Restaurante } from '../types/api.types';
 export default function LandingPage() {
   const [restaurantes, setRestaurantes] = useState<Restaurante[]>([]);
   const [, setLoadingRestaurantes] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const cargarRestaurantes = async () => {
@@ -151,6 +153,7 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-white/70 backdrop-blur-xl border-b border-white/20 shadow-sm"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
+            {/* Logo */}
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg">
                 <QrCode className="h-6 w-6 text-white" />
@@ -159,7 +162,9 @@ export default function LandingPage() {
                 MenuQR
               </span>
             </div>
-            <div className="flex items-center space-x-3">
+            
+            {/* Desktop Menu */}
+            <div className="hidden md:flex items-center space-x-3">
               <Link
                 to="/login"
                 className="flex items-center space-x-2 px-5 py-2.5 text-gray-700 hover:text-green-600 transition-all rounded-lg hover:bg-white/50 backdrop-blur-sm"
@@ -175,7 +180,44 @@ export default function LandingPage() {
                 <span className="font-semibold">Registrarse</span>
               </Link>
             </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 rounded-lg text-gray-700 hover:bg-white/50 backdrop-blur-sm transition-colors"
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+            </button>
           </div>
+
+          {/* Mobile Menu */}
+          {mobileMenuOpen && (
+            <div className="md:hidden pb-4 animate-in slide-in-from-top duration-200">
+              <div className="flex flex-col space-y-2 pt-2">
+                <Link
+                  to="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center space-x-2 px-4 py-3 text-gray-700 hover:text-green-600 transition-all rounded-lg hover:bg-white/50 backdrop-blur-sm border border-gray-200"
+                >
+                  <LogIn className="h-5 w-5" />
+                  <span className="font-medium">Iniciar Sesión</span>
+                </Link>
+                <Link
+                  to="/register"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center space-x-2 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg shadow-green-500/30"
+                >
+                  <UserPlus className="h-5 w-5" />
+                  <span className="font-semibold">Registrarse</span>
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </nav>
 
