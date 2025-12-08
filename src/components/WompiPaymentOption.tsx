@@ -28,7 +28,11 @@ export default function WompiPaymentOption({
     setIsRedirecting(true);
     try {
       const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5290/api';
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('token') || localStorage.getItem('accessToken');
+      
+      if (!token) {
+        throw new Error('No se encontró el token de autenticación. Por favor, inicia sesión nuevamente.');
+      }
       
       // Obtener el link de pago del backend
       const response = await fetch(
@@ -44,17 +48,21 @@ export default function WompiPaymentOption({
       const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.message || 'No se pudo obtener el link de pago');
+        const errorMessage = data.message || data.error || 'No se pudo obtener el link de pago';
+        console.error('Error al obtener payment link:', data);
+        throw new Error(errorMessage);
       }
       
       if (data.data && data.data.paymentLink) {
         // Redirigir al link de pago de Wompi
         window.location.href = data.data.paymentLink;
+        // No resetear isRedirecting aquí porque la página se está redirigiendo
       } else {
-        throw new Error('El link de pago no está disponible');
+        throw new Error('El link de pago no está disponible en la respuesta del servidor');
       }
     } catch (error: any) {
       setIsRedirecting(false);
+      console.error('Error completo al obtener payment link:', error);
       if (onError) {
         onError(error.message || 'Error al obtener el link de pago');
       }
