@@ -392,27 +392,27 @@ export default function ItemsMenuPage() {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
       {/* Header mejorado */}
-      <div className="mb-8">
-        <div className="bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 rounded-xl border border-green-100 p-6 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="flex-shrink-0">
-                <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <Utensils className="h-7 w-7 text-white" />
+      <div className="mb-6 sm:mb-8">
+        <div className="bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 rounded-xl border border-green-100 p-4 sm:p-6 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+              <div className="flex-shrink-0 w-fit">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <Utensils className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
                 </div>
               </div>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                  Items del Menú
+              <div className="flex-1 min-w-0">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex flex-wrap items-center gap-2 sm:gap-3">
+                  <span>Items del Menú</span>
                   {items.length > 0 && !loading && (
-                    <span className="ml-3 px-3 py-1 text-sm font-semibold bg-green-100 text-green-700 rounded-full">
+                    <span className="px-2 sm:px-3 py-1 text-xs sm:text-sm font-semibold bg-green-100 text-green-700 rounded-full whitespace-nowrap">
                       {items.length}
                     </span>
                   )}
                 </h1>
-                <p className="mt-2 text-sm text-gray-600">
+                <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600">
                   Gestiona los platos y productos de tu menú
                 </p>
               </div>
@@ -424,10 +424,10 @@ export default function ItemsMenuPage() {
                   setEditingItem(null);
                   resetForm();
                 }}
-                className="inline-flex items-center px-5 py-3 border border-transparent rounded-xl shadow-lg text-sm font-semibold text-white bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all transform hover:scale-105"
+                className="w-full sm:w-auto inline-flex items-center justify-center px-4 sm:px-5 py-2.5 sm:py-3 border border-transparent rounded-xl shadow-lg text-sm font-semibold text-white bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all transform hover:scale-105"
               >
-                <Plus className="h-5 w-5 mr-2" />
-                Nuevo Item
+                <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                <span className="whitespace-nowrap">Nuevo Item</span>
               </button>
             )}
           </div>
@@ -436,48 +436,48 @@ export default function ItemsMenuPage() {
 
       {/* Estadísticas */}
       {items.length > 0 && !loading && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
             <div className="flex items-center">
               <div className="flex-shrink-0 p-2 bg-blue-100 rounded-lg">
-                <Utensils className="h-5 w-5 text-blue-600" />
+                <Utensils className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Total Items</p>
-                <p className="text-2xl font-semibold text-gray-900">{items.length}</p>
+              <div className="ml-2 sm:ml-4 min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">Total Items</p>
+                <p className="text-xl sm:text-2xl font-semibold text-gray-900">{items.length}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
             <div className="flex items-center">
               <div className="flex-shrink-0 p-2 bg-green-100 rounded-lg">
-                <Eye className="h-5 w-5 text-green-600" />
+                <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Disponibles</p>
-                <p className="text-2xl font-semibold text-gray-900">{getTotalDisponibles()}</p>
+              <div className="ml-2 sm:ml-4 min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">Disponibles</p>
+                <p className="text-xl sm:text-2xl font-semibold text-gray-900">{getTotalDisponibles()}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
             <div className="flex items-center">
               <div className="flex-shrink-0 p-2 bg-yellow-100 rounded-lg">
-                <Star className="h-5 w-5 text-yellow-600" />
+                <Star className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Destacados</p>
-                <p className="text-2xl font-semibold text-gray-900">{getTotalDestacados()}</p>
+              <div className="ml-2 sm:ml-4 min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">Destacados</p>
+                <p className="text-xl sm:text-2xl font-semibold text-gray-900">{getTotalDestacados()}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
             <div className="flex items-center">
               <div className="flex-shrink-0 p-2 bg-purple-100 rounded-lg">
-                <DollarSign className="h-5 w-5 text-purple-600" />
+                <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Precio Promedio</p>
-                <p className="text-2xl font-semibold text-gray-900">${getPrecioPromedio().toFixed(2)}</p>
+              <div className="ml-2 sm:ml-4 min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">Precio Promedio</p>
+                <p className="text-xl sm:text-2xl font-semibold text-gray-900">${getPrecioPromedio().toFixed(2)}</p>
               </div>
             </div>
           </div>
@@ -487,25 +487,27 @@ export default function ItemsMenuPage() {
       {/* Filtro por categoría mejorado */}
       {!showForm && categorias.length > 0 && (
         <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <div className="flex items-center space-x-3">
-            <Filter className="h-5 w-5 text-gray-400" />
-            <div className="flex-1">
-              <label htmlFor="filtroCategoria" className="block text-sm font-medium text-gray-700 mb-2">
-                Filtrar por categoría
-              </label>
-              <select
-                id="filtroCategoria"
-                value={filtroCategoria}
-                onChange={(e) => setFiltroCategoria(e.target.value)}
-                className="block w-full sm:w-64 px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 bg-white sm:text-sm transition-colors"
-              >
-                <option value="">Todas las categorías</option>
-                {categorias.map((categoria) => (
-                  <option key={categoria.id} value={categoria.id}>
-                    {categoria.nombre}
-                  </option>
-                ))}
-              </select>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="flex items-center space-x-3 flex-1">
+              <Filter className="h-5 w-5 text-gray-400 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <label htmlFor="filtroCategoria" className="block text-sm font-medium text-gray-700 mb-2">
+                  Filtrar por categoría
+                </label>
+                <select
+                  id="filtroCategoria"
+                  value={filtroCategoria}
+                  onChange={(e) => setFiltroCategoria(e.target.value)}
+                  className="block w-full sm:w-64 px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 bg-white sm:text-sm transition-colors"
+                >
+                  <option value="">Todas las categorías</option>
+                  {categorias.map((categoria) => (
+                    <option key={categoria.id} value={categoria.id}>
+                      {categoria.nombre}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
             {filtroCategoria && (
               <button
@@ -554,8 +556,8 @@ export default function ItemsMenuPage() {
 
       {/* Formulario - Continuará en la siguiente parte debido a su tamaño */}
       {showForm && (
-        <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
             {editingItem ? 'Editar Item del Menú' : 'Nuevo Item del Menú'}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -892,18 +894,18 @@ export default function ItemsMenuPage() {
               </div>
             </div>
 
-            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 border-t border-gray-200">
               <button
                 type="button"
                 onClick={cancelForm}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                  className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {saving ? (
                   <>
@@ -1067,8 +1069,8 @@ export default function ItemsMenuPage() {
                     )}
 
                     {/* Acciones */}
-                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                      <div className="flex items-center space-x-1">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-0 pt-3 border-t border-gray-100">
+                      <div className="flex items-center justify-center sm:justify-start space-x-1">
                         <button
                           onClick={() => handleMoveOrder(item, 'up')}
                           disabled={!canMoveUp}
@@ -1086,7 +1088,7 @@ export default function ItemsMenuPage() {
                           <MoveDown className="h-4 w-4" />
                         </button>
                       </div>
-                      <div className="flex items-center space-x-1">
+                      <div className="flex items-center justify-center sm:justify-end space-x-1">
                         <button
                           onClick={() => handleToggleDisponible(item)}
                           className={`p-1.5 transition-colors ${

@@ -277,24 +277,24 @@ export default function EnlacesPage() {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 rounded-2xl p-6 mb-8 border border-green-100">
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-lg">
-              <Link2 className="h-14 w-14 text-white" />
+      <div className="bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 border border-green-100">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+            <div className="p-2 sm:p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-lg w-fit">
+              <Link2 className="h-10 w-10 sm:h-14 sm:w-14 text-white" />
             </div>
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold text-gray-900">Enlaces del Restaurante</h1>
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Enlaces del Restaurante</h1>
                 {!loading && enlaces.length > 0 && (
-                  <span className="px-3 py-1 bg-green-600 text-white text-sm font-semibold rounded-full">
+                  <span className="px-2 sm:px-3 py-1 bg-green-600 text-white text-xs sm:text-sm font-semibold rounded-full whitespace-nowrap">
                     {enlaces.length}
                   </span>
                 )}
               </div>
-              <p className="text-gray-600">Gestiona los enlaces sociales y de contacto de tu restaurante</p>
+              <p className="text-sm sm:text-base text-gray-600">Gestiona los enlaces sociales y de contacto de tu restaurante</p>
             </div>
           </div>
           {!showForm && (
@@ -304,10 +304,10 @@ export default function EnlacesPage() {
                 setEditingEnlace(null);
                 resetForm();
               }}
-              className="inline-flex items-center px-5 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              className="w-full sm:w-auto inline-flex items-center justify-center px-4 sm:px-5 py-2.5 sm:py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white text-sm sm:text-base font-semibold rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
             >
-              <Plus className="h-5 w-5 mr-2" />
-              Nuevo Enlace
+              <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+              <span className="whitespace-nowrap">Nuevo Enlace</span>
             </button>
           )}
         </div>
@@ -315,37 +315,37 @@ export default function EnlacesPage() {
 
       {/* Estadísticas */}
       {enlaces.length > 0 && !loading && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
             <div className="flex items-center">
               <div className="flex-shrink-0 p-2 bg-green-100 rounded-lg">
-                <Link2 className="h-5 w-5 text-green-600" />
+                <Link2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Total de Enlaces</p>
-                <p className="text-2xl font-semibold text-gray-900">{enlaces.length}</p>
+              <div className="ml-3 sm:ml-4 min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">Total de Enlaces</p>
+                <p className="text-xl sm:text-2xl font-semibold text-gray-900">{enlaces.length}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
             <div className="flex items-center">
               <div className="flex-shrink-0 p-2 bg-blue-100 rounded-lg">
-                <Eye className="h-5 w-5 text-blue-600" />
+                <Eye className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Enlaces Activos</p>
-                <p className="text-2xl font-semibold text-gray-900">{getEnlacesActivos().length}</p>
+              <div className="ml-3 sm:ml-4 min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">Enlaces Activos</p>
+                <p className="text-xl sm:text-2xl font-semibold text-gray-900">{getEnlacesActivos().length}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
             <div className="flex items-center">
               <div className="flex-shrink-0 p-2 bg-orange-100 rounded-lg">
-                <TrendingUp className="h-5 w-5 text-orange-600" />
+                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600" />
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Total de Clics</p>
-                <p className="text-2xl font-semibold text-gray-900">{getTotalClics()}</p>
+              <div className="ml-3 sm:ml-4 min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">Total de Clics</p>
+                <p className="text-xl sm:text-2xl font-semibold text-gray-900">{getTotalClics()}</p>
               </div>
             </div>
           </div>
@@ -387,8 +387,8 @@ export default function EnlacesPage() {
 
       {/* Formulario */}
       {showForm && (
-        <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
             {editingEnlace ? 'Editar Enlace' : 'Nuevo Enlace'}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -541,18 +541,18 @@ export default function EnlacesPage() {
               </div>
             </div>
 
-            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 border-t border-gray-200">
               <button
                 type="button"
                 onClick={cancelForm}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {saving ? (
                   <>
@@ -597,7 +597,7 @@ export default function EnlacesPage() {
       ) : (
         <div>
           {/* Grid de cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             {enlaces.map((enlace, index) => (
               <div
                 key={enlace.id}
@@ -664,8 +664,8 @@ export default function EnlacesPage() {
                   </div>
 
                   {/* Acciones */}
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-                    <div className="flex items-center space-x-1">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-0 mt-4 pt-4 border-t border-gray-100">
+                    <div className="flex items-center justify-center sm:justify-start space-x-1">
                       <button
                         onClick={() => handleMoveOrder(enlace, 'up')}
                         disabled={index === 0}
@@ -683,7 +683,7 @@ export default function EnlacesPage() {
                         <MoveDown className="h-4 w-4" />
                       </button>
                     </div>
-                    <div className="flex items-center space-x-1">
+                    <div className="flex items-center justify-center sm:justify-end space-x-1">
                       <button
                         onClick={() => handleToggleActivo(enlace)}
                         className={`p-1.5 transition-colors ${
@@ -717,15 +717,15 @@ export default function EnlacesPage() {
           </div>
 
           {/* Vista previa de cómo se verá en público */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Vista Previa</h3>
-              <BarChart3 className="h-5 w-5 text-gray-400" />
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900">Vista Previa</h3>
+              <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
             </div>
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="text-xs sm:text-sm text-gray-500 mb-4">
               Así se verán tus enlaces en la página pública del restaurante:
             </p>
-            <div className="space-y-2 max-w-md">
+            <div className="space-y-2 max-w-md mx-auto sm:mx-0">
               {getEnlacesActivos().slice(0, 3).map((enlace) => (
                 <div
                   key={enlace.id}

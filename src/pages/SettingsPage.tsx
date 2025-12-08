@@ -245,19 +245,19 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
       {/* Header mejorado */}
-      <div className="mb-8">
-        <div className="bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 rounded-xl border border-green-100 p-6 shadow-sm">
-          <div className="flex items-center space-x-4">
-            <div className="flex-shrink-0">
-              <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-                <Settings className="h-7 w-7 text-white" />
+      <div className="mb-6 sm:mb-8">
+        <div className="bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 rounded-xl border border-green-100 p-4 sm:p-6 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+            <div className="flex-shrink-0 w-fit">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+                <Settings className="h-6 w-6 sm:h-7 sm:w-7 text-white" />
               </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Configuración</h1>
-              <p className="mt-2 text-sm text-gray-600">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Configuración</h1>
+              <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600">
                 Gestiona tu perfil, seguridad y preferencias
               </p>
             </div>
@@ -267,15 +267,15 @@ export default function SettingsPage() {
 
       {/* Mensajes de éxito/error */}
       {error && (
-        <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start">
-          <AlertCircle className="h-5 w-5 text-red-600 mr-3 mt-0.5 flex-shrink-0" />
-          <div className="flex-1">
-            <p className="text-sm font-medium text-red-800">Error</p>
-            <p className="text-sm text-red-700">{error}</p>
+        <div className="mb-4 sm:mb-6 bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4 flex items-start gap-2 sm:gap-3">
+          <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-red-600 mt-0.5 flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs sm:text-sm font-medium text-red-800">Error</p>
+            <p className="text-xs sm:text-sm text-red-700 break-words">{error}</p>
           </div>
           <button
             onClick={() => setError(null)}
-            className="text-red-400 hover:text-red-600 ml-2"
+            className="text-red-400 hover:text-red-600 ml-auto flex-shrink-0"
           >
             ×
           </button>
@@ -283,40 +283,40 @@ export default function SettingsPage() {
       )}
 
       {success && (
-        <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-start">
-          <CheckCircle2 className="h-5 w-5 text-green-600 mr-3 mt-0.5 flex-shrink-0" />
-          <div className="flex-1">
-            <p className="text-sm font-medium text-green-800">Éxito</p>
-            <p className="text-sm text-green-700">{success}</p>
+        <div className="mb-4 sm:mb-6 bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4 flex items-start gap-2 sm:gap-3">
+          <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 mt-0.5 flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs sm:text-sm font-medium text-green-800">Éxito</p>
+            <p className="text-xs sm:text-sm text-green-700 break-words">{success}</p>
           </div>
           <button
             onClick={() => setSuccess(null)}
-            className="text-green-400 hover:text-green-600 ml-2"
+            className="text-green-400 hover:text-green-600 ml-auto flex-shrink-0"
           >
             ×
           </button>
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
         {/* Sidebar de navegación */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <nav className="space-y-2">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
+            <nav className="grid grid-cols-2 lg:grid-cols-1 gap-2 lg:space-y-2">
               {sections.map((section) => {
                 const Icon = section.icon;
                 return (
                   <button
                     key={section.id}
                     onClick={() => setActiveSection(section.id)}
-                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                    className={`w-full flex items-center justify-center lg:justify-start space-x-2 lg:space-x-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
                       activeSection === section.id
                         ? 'bg-green-50 text-green-700 border border-green-200'
                         : 'text-gray-700 hover:bg-gray-50'
                     }`}
                   >
-                    <Icon className="h-5 w-5" />
-                    <span>{section.name}</span>
+                    <Icon className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                    <span className="truncate">{section.name}</span>
                   </button>
                 );
               })}
@@ -326,15 +326,15 @@ export default function SettingsPage() {
 
         {/* Contenido principal */}
         <div className="lg:col-span-3">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
             {/* Sección: Perfil */}
             {activeSection === 'perfil' && (
               <div>
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center">
-                    <User className="h-5 w-5 text-green-600" />
+                <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center flex-shrink-0">
+                    <User className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                   </div>
-                  <h2 className="text-xl font-bold text-gray-900">Información del Perfil</h2>
+                  <h2 className="text-lg sm:text-xl font-bold text-gray-900">Información del Perfil</h2>
                 </div>
 
                 <form onSubmit={handleSavePerfil} className="space-y-6">
@@ -423,7 +423,7 @@ export default function SettingsPage() {
                     <button
                       type="submit"
                       disabled={saving}
-                      className="inline-flex items-center px-5 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="w-full sm:w-auto inline-flex items-center justify-center px-4 sm:px-5 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       {saving ? (
                         <>
@@ -445,11 +445,11 @@ export default function SettingsPage() {
             {/* Sección: Seguridad */}
             {activeSection === 'seguridad' && (
               <div>
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center">
-                    <Lock className="h-5 w-5 text-green-600" />
+                <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center flex-shrink-0">
+                    <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                   </div>
-                  <h2 className="text-xl font-bold text-gray-900">Seguridad</h2>
+                  <h2 className="text-lg sm:text-xl font-bold text-gray-900">Seguridad</h2>
                 </div>
 
                 <form onSubmit={handleSavePassword} className="space-y-6">
@@ -541,7 +541,7 @@ export default function SettingsPage() {
                     <button
                       type="submit"
                       disabled={saving}
-                      className="inline-flex items-center px-5 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="w-full sm:w-auto inline-flex items-center justify-center px-4 sm:px-5 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       {saving ? (
                         <>
@@ -563,16 +563,16 @@ export default function SettingsPage() {
             {/* Sección: Restaurante */}
             {activeSection === 'restaurante' && (
               <div>
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center">
-                    <Building className="h-5 w-5 text-green-600" />
+                <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center flex-shrink-0">
+                    <Building className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                   </div>
-                  <h2 className="text-xl font-bold text-gray-900">Información del Restaurante</h2>
+                  <h2 className="text-lg sm:text-xl font-bold text-gray-900">Información del Restaurante</h2>
                 </div>
 
                 {restaurante ? (
                   <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
                         <p className="text-sm text-gray-900 font-medium">{restaurante.nombre}</p>
@@ -623,10 +623,10 @@ export default function SettingsPage() {
                     <div className="pt-4 border-t border-gray-200">
                       <a
                         href="/dashboard/restaurant"
-                        className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                        className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
                       >
                         <Settings className="h-4 w-4 mr-2" />
-                        Editar Configuración del Restaurante
+                        <span className="whitespace-nowrap">Editar Configuración del Restaurante</span>
                       </a>
                     </div>
                   </div>
@@ -643,20 +643,20 @@ export default function SettingsPage() {
             {/* Sección: Permisos */}
             {activeSection === 'permisos' && (
               <div>
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center">
-                    <Shield className="h-5 w-5 text-green-600" />
+                <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center flex-shrink-0">
+                    <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                   </div>
-                  <h2 className="text-xl font-bold text-gray-900">Permisos y Roles</h2>
+                  <h2 className="text-lg sm:text-xl font-bold text-gray-900">Permisos y Roles</h2>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Rol Actual</label>
-                    <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg border border-purple-200">
-                      <Shield className="h-6 w-6 text-purple-600" />
-                      <div>
-                        <p className="text-sm font-semibold text-purple-900">{user?.rolNombre || 'Sin rol'}</p>
+                    <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg border border-purple-200">
+                      <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 flex-shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-purple-900 truncate">{user?.rolNombre || 'Sin rol'}</p>
                         <p className="text-xs text-purple-700">Tu rol en el sistema</p>
                       </div>
                     </div>
@@ -665,7 +665,7 @@ export default function SettingsPage() {
                   {user?.permisos && user.permisos.length > 0 ? (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-3">Permisos</label>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {user.permisos.map((permiso, index) => (
                           <div
                             key={index}

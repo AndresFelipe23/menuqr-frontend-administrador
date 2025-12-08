@@ -40,22 +40,22 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-30">
+    <nav className="sticky top-0 z-50">
       <div className="absolute inset-0 bg-white/70 backdrop-blur-xl border-b border-white/20 shadow-sm"></div>
       <div className="relative max-w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Título dinámico */}
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-3">
-              <div className="h-1 w-1 rounded-full bg-green-500 animate-pulse"></div>
-              <h2 className="text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+          <div className="flex items-center space-x-4 min-w-0 flex-1 md:ml-0 ml-14">
+            <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+              <div className="h-1 w-1 rounded-full bg-green-500 animate-pulse flex-shrink-0"></div>
+              <h2 className="text-sm sm:text-base md:text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent truncate">
                 {pageTitle}
               </h2>
             </div>
           </div>
 
           {/* Acciones del usuario */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3 flex-shrink-0">
             {/* Menú de usuario */}
             <div className="relative">
               <button
@@ -83,10 +83,10 @@ export default function Navbar() {
               {showUserMenu && (
                 <>
                   <div
-                    className="fixed inset-0 z-10"
+                    className="fixed inset-0 z-[55]"
                     onClick={() => setShowUserMenu(false)}
                   />
-                  <div className="absolute right-0 mt-2 w-64 rounded-xl shadow-2xl bg-white/95 backdrop-blur-xl border border-white/20 z-20 overflow-hidden">
+                  <div className="absolute right-0 mt-2 w-64 rounded-xl shadow-2xl bg-white/95 backdrop-blur-xl border border-white/20 z-[60] overflow-hidden">
                     {/* Header del dropdown */}
                     <div className="px-4 py-3 border-b border-gray-200/50 bg-gradient-to-br from-green-50 to-emerald-50">
                       <p className="text-sm font-bold text-gray-900">{user?.nombre}</p>

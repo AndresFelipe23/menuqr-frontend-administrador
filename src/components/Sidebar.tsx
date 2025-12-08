@@ -240,7 +240,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       {/* Mobile Menu Button */}
       <button
         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-white/80 backdrop-blur-md border border-gray-200/50 shadow-lg text-gray-700 hover:text-green-600 transition-all"
+        className="md:hidden fixed top-4 left-4 z-[60] p-2 rounded-lg bg-white/90 backdrop-blur-md border border-gray-200/50 shadow-lg text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all"
         aria-label="Toggle menu"
       >
         {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -251,12 +251,13 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
         <>
           {/* Overlay */}
           <div
-            className="md:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+            className="md:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300 ease-in-out"
             onClick={() => setMobileMenuOpen(false)}
+            style={{ top: '64px' }}
           />
           
           {/* Sidebar móvil */}
-          <aside className="md:hidden fixed inset-y-0 left-0 z-50 w-72 bg-white/95 backdrop-blur-xl border-r border-gray-200/50 transform transition-transform duration-300 ease-in-out">
+          <aside className="md:hidden fixed left-0 w-72 bg-white shadow-2xl border-r border-gray-200 z-[45] overflow-y-auto transition-transform duration-300 ease-in-out" style={{ top: '64px', height: 'calc(100vh - 64px)', transform: mobileMenuOpen ? 'translateX(0)' : 'translateX(-100%)', willChange: 'transform' }}>
             <div className="flex flex-col h-full">
               {/* Header móvil */}
               <div className="flex items-center justify-between px-4 py-5 border-b border-gray-200/50">

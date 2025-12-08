@@ -527,7 +527,7 @@ export default function PedidosPage() {
 
   if (!user?.restauranteId) {
     return (
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <p className="text-yellow-800">No tienes un restaurante asociado.</p>
         </div>
@@ -576,22 +576,22 @@ export default function PedidosPage() {
           </div>
         )}
         {/* Header con gradiente verde */}
-        <div className="bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 rounded-2xl p-6 mb-8 border border-green-100">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-lg">
-                <ShoppingCart className="h-14 w-14 text-white" />
+        <div className="bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 border border-green-100">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+              <div className="p-2 sm:p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-lg w-fit">
+                <ShoppingCart className="h-10 w-10 sm:h-14 sm:w-14 text-white" />
               </div>
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <h1 className="text-3xl font-bold text-gray-900">Pedidos</h1>
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Pedidos</h1>
                   {!loading && pedidos.length > 0 && (
-                    <span className="px-3 py-1 bg-green-600 text-white text-sm font-semibold rounded-full">
+                    <span className="px-2 sm:px-3 py-1 bg-green-600 text-white text-xs sm:text-sm font-semibold rounded-full whitespace-nowrap">
                       {pedidos.length}
                     </span>
                   )}
                 </div>
-                <p className="text-gray-600">Gestiona los pedidos de tu restaurante</p>
+                <p className="text-xs sm:text-base text-gray-600">Gestiona los pedidos de tu restaurante</p>
               </div>
             </div>
             {!showForm && !selectedPedido && (
@@ -600,10 +600,10 @@ export default function PedidosPage() {
                   setShowForm(true);
                   resetForm();
                 }}
-                className="inline-flex items-center px-5 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                className="w-full sm:w-auto inline-flex items-center justify-center px-4 sm:px-5 py-2.5 sm:py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white text-sm sm:text-base font-semibold rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
               >
-                <Plus className="h-5 w-5 mr-2" />
-                Nuevo Pedido
+                <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                <span className="whitespace-nowrap">Nuevo Pedido</span>
               </button>
             )}
           </div>
@@ -740,9 +740,9 @@ export default function PedidosPage() {
 
       {/* Vista detallada de pedido */}
       {selectedPedido && !showForm && (
-        <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Detalle del Pedido</h2>
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900">Detalle del Pedido</h2>
             <button
               onClick={() => setSelectedPedido(null)}
               className="text-gray-400 hover:text-gray-600"
@@ -1006,21 +1006,21 @@ export default function PedidosPage() {
             </div>
           )}
 
-          <div className="mt-6 flex items-center justify-between pt-4 border-t border-gray-200">
-            <div className="flex space-x-2">
+          <div className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-0 pt-4 border-t border-gray-200">
+            <div className="flex flex-wrap items-center gap-2">
               {selectedPedido.estado === 'pendiente_confirmacion' && (
                 <button
                   onClick={() => handleConfirmarPedido(selectedPedido)}
-                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                  className="w-full sm:w-auto inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-transparent rounded-lg shadow-sm text-xs sm:text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
                 >
-                  <CheckCircle2 className="h-4 w-4 mr-2" />
-                  Confirmar Pedido y Enviar a Cocina
+                  <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                  <span className="whitespace-nowrap">Confirmar Pedido y Enviar a Cocina</span>
                 </button>
               )}
               {getSiguienteEstado(selectedPedido.estado) && selectedPedido.estado !== 'pendiente_confirmacion' && (
                 <button
                   onClick={() => handleCambiarEstado(selectedPedido, getSiguienteEstado(selectedPedido.estado)!)}
-                  className="inline-flex items-center px-3 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                  className="w-full sm:w-auto inline-flex items-center justify-center px-3 py-2 border border-transparent rounded-lg shadow-sm text-xs sm:text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
                 >
                   Avanzar a {getEstadoLabel(getSiguienteEstado(selectedPedido.estado)!)}
                 </button>
@@ -1028,7 +1028,7 @@ export default function PedidosPage() {
               {selectedPedido.estado !== 'cancelado' && selectedPedido.estado !== 'completado' && (
                 <button
                   onClick={() => handleCambiarEstado(selectedPedido, 'cancelado')}
-                  className="inline-flex items-center px-3 py-2 border border-red-300 rounded-lg shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                  className="w-full sm:w-auto inline-flex items-center justify-center px-3 py-2 border border-red-300 rounded-lg shadow-sm text-xs sm:text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
                 >
                   Cancelar Pedido
                 </button>
@@ -1036,9 +1036,9 @@ export default function PedidosPage() {
             </div>
             <button
               onClick={() => handleDelete(selectedPedido.id)}
-              className="inline-flex items-center px-3 py-2 border border-red-300 rounded-lg shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+              className="w-full sm:w-auto inline-flex items-center justify-center px-3 py-2 border border-red-300 rounded-lg shadow-sm text-xs sm:text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
             >
-              <Trash2 className="h-4 w-4 mr-1" />
+              <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
               Eliminar
             </button>
           </div>
@@ -1372,18 +1372,18 @@ export default function PedidosPage() {
               )}
             </div>
 
-            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 border-t border-gray-200">
               <button
                 type="button"
                 onClick={cancelForm}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
                 disabled={saving || itemsForm.length === 0}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {saving ? (
                   <>
@@ -1437,42 +1437,42 @@ export default function PedidosPage() {
                         className="p-4 hover:bg-gray-50 transition-colors cursor-pointer"
                         onClick={() => setSelectedPedido(pedido)}
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center flex-1 min-w-0">
-                            <div className="flex-shrink-0 mr-4">
-                              <div className={`h-12 w-12 rounded-lg flex items-center justify-center ${getEstadoColor(pedido.estado)}`}>
+                        <div className="flex items-start sm:items-center justify-between gap-3 sm:gap-4">
+                          <div className="flex items-start sm:items-center flex-1 min-w-0 gap-3 sm:gap-4">
+                            <div className="flex-shrink-0">
+                              <div className={`h-10 w-10 sm:h-12 sm:w-12 rounded-lg flex items-center justify-center ${getEstadoColor(pedido.estado)}`}>
                                 {getEstadoIcon(pedido.estado)}
                               </div>
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center">
+                              <div className="flex flex-wrap items-center gap-2 mb-1">
                                 <p className="text-sm font-medium text-gray-900 truncate">
                                   Pedido #{pedido.id.substring(0, 8)}
                                 </p>
-                                <span className={`ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getEstadoColor(pedido.estado)}`}>
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium flex-shrink-0 ${getEstadoColor(pedido.estado)}`}>
                                   {getEstadoLabel(pedido.estado)}
                                 </span>
                               </div>
-                              <div className="mt-1 flex items-center text-sm text-gray-500 space-x-4">
-                                <div className="flex items-center">
-                                  <Table className="h-4 w-4 mr-1" />
-                                  <span>{pedido.mesaNumero} {pedido.mesaNombre && `- ${pedido.mesaNombre}`}</span>
+                              <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500">
+                                <div className="flex items-center flex-shrink-0">
+                                  <Table className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                                  <span className="whitespace-nowrap">{pedido.mesaNumero} {pedido.mesaNombre && `- ${pedido.mesaNombre}`}</span>
                                 </div>
-                                <div className="flex items-center">
-                                  <DollarSign className="h-4 w-4 mr-1" />
-                                  <span className="font-semibold">{formatearMoneda(pedido.montoTotal)}</span>
+                                <div className="flex items-center flex-shrink-0">
+                                  <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                                  <span className="font-semibold whitespace-nowrap">{formatearMoneda(pedido.montoTotal)}</span>
                                 </div>
                                 {pedido.items && (
-                                  <span>{pedido.items.length} item(s)</span>
+                                  <span className="flex-shrink-0">{pedido.items.length} item(s)</span>
                                 )}
                                 {pedido.meseroNombre && (
-                                  <div className="flex items-center">
-                                    <User className="h-4 w-4 mr-1" />
+                                  <div className="flex items-center flex-shrink-0 min-w-0">
+                                    <User className="h-3 w-3 sm:h-4 sm:w-4 mr-1 flex-shrink-0" />
                                     <span className="truncate">{pedido.meseroNombre}</span>
                                   </div>
                                 )}
                                 {pedido.nombreCliente && (
-                                  <div className="flex items-center">
+                                  <div className="flex items-center flex-shrink-0 min-w-0">
                                     <span className="truncate">{pedido.nombreCliente}</span>
                                   </div>
                                 )}
@@ -1485,15 +1485,15 @@ export default function PedidosPage() {
                                       style={{ width: `${getProgresoPedido(pedido.estado)}%` }}
                                     />
                                   </div>
-                                  <span className="text-xs text-gray-500">{Math.round(getProgresoPedido(pedido.estado))}%</span>
+                                  <span className="text-xs text-gray-500 whitespace-nowrap">{Math.round(getProgresoPedido(pedido.estado))}%</span>
                                 </div>
                               )}
                               <p className="mt-1 text-xs text-gray-400">
-                                {new Date(pedido.fechaCreacion).toLocaleString('es-ES')}
+                                {new Date(pedido.fechaCreacion).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}
                               </p>
                             </div>
                           </div>
-                          <ChevronRight className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                          <ChevronRight className="h-5 w-5 text-gray-400 flex-shrink-0 mt-1 sm:mt-0" />
                         </div>
                       </li>
                     ))}
@@ -1502,7 +1502,7 @@ export default function PedidosPage() {
               )}
 
               {vistaPedidos === 'tarjetas' && (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {pedidosFiltrados.map((pedido) => (
                     <div
                       key={pedido.id}
@@ -1644,7 +1644,7 @@ export default function PedidosPage() {
               )}
 
               {vistaPedidos === 'kanban' && (
-                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {['pendiente_confirmacion', 'confirmado', 'preparando', 'listo'].map((estado) => {
                     const pedidosEstado = pedidosFiltrados.filter(p => p.estado === estado);
                     return (

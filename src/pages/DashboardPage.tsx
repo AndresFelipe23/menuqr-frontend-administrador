@@ -240,16 +240,17 @@ export default function DashboardPage() {
   return (
     <div>
       {/* Header con gradiente verde */}
-      <div className="bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 rounded-2xl p-6 mb-8 border border-green-100">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-lg">
-            <LayoutDashboard className="h-14 w-14 text-white" />
+      <div className="bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 border border-green-100">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+          <div className="p-2 sm:p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl sm:rounded-2xl shadow-lg flex-shrink-0">
+            <LayoutDashboard className="h-10 w-10 sm:h-12 sm:w-12 lg:h-14 lg:w-14 text-white" />
           </div>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Bienvenido, {user?.nombre} 👋
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
+              <span className="block sm:inline">Bienvenido,</span>{' '}
+              <span className="block sm:inline truncate">{user?.nombre || 'Usuario'}</span> 👋
             </h1>
-            <p className="text-gray-600">
+            <p className="text-sm sm:text-base text-gray-600">
               Aquí está el resumen de tu restaurante y las acciones rápidas
             </p>
           </div>
@@ -258,26 +259,26 @@ export default function DashboardPage() {
 
       {/* Banner de Upgrade para usuarios FREE */}
       {suscripcion?.tipoPlan === 'free' && showUpgradeBanner && (
-        <div className="mb-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg shadow-lg p-6 text-white relative overflow-hidden">
+        <div className="mb-6 sm:mb-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg shadow-lg p-4 sm:p-6 text-white relative overflow-hidden">
           <button
             onClick={() => setShowUpgradeBanner(false)}
-            className="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors"
+            className="absolute top-3 right-3 sm:top-4 sm:right-4 text-white hover:text-gray-200 transition-colors p-1"
             aria-label="Cerrar banner"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
-          <div className="flex items-start space-x-4">
+          <div className="flex items-start gap-3 sm:gap-4 pr-8 sm:pr-0">
             <div className="flex-shrink-0">
-              <Sparkles className="h-8 w-8 text-yellow-300" />
+              <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-300" />
             </div>
-            <div className="flex-1">
-              <h3 className="text-xl font-bold mb-2">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg sm:text-xl font-bold mb-2">
                 ¡Desbloquea todo el potencial de tu restaurante!
               </h3>
-              <p className="text-green-100 mb-4">
+              <p className="text-sm sm:text-base text-green-100 mb-3 sm:mb-4">
                 Estás usando el plan <strong>FREE</strong>. Actualiza a <strong>PRO</strong> o <strong>PREMIUM</strong> para obtener:
               </p>
-              <ul className="list-disc list-inside text-green-100 space-y-1 mb-4">
+              <ul className="text-xs sm:text-sm list-disc list-inside text-green-100 space-y-1 mb-3 sm:mb-4">
                 <li>Items, mesas y usuarios ilimitados</li>
                 <li>WebSockets en tiempo real</li>
                 <li>Analytics y reportes avanzados</li>
@@ -285,10 +286,10 @@ export default function DashboardPage() {
               </ul>
               <Link
                 to="/dashboard/planes"
-                className="inline-flex items-center px-6 py-3 bg-white text-green-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors"
+                className="inline-flex items-center justify-center w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-white text-green-600 text-sm sm:text-base font-semibold rounded-lg hover:bg-gray-100 transition-colors"
               >
                 Ver Planes
-                <ArrowRight className="ml-2 h-5 w-5" />
+                <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
               </Link>
             </div>
           </div>
@@ -296,31 +297,31 @@ export default function DashboardPage() {
       )}
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-6 sm:mb-8">
         {statCards.map((stat) => {
           const Icon = stat.icon;
           const content = (
             <div className="bg-white overflow-hidden rounded-xl hover:shadow-lg transition-all border border-gray-200 hover:border-green-300 hover:-translate-y-1">
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className={`flex-shrink-0 p-4 rounded-xl ${stat.bgColor} shadow-sm`}>
-                      <Icon className={`h-7 w-7 ${stat.iconColor}`} strokeWidth={2.5} />
+                  <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                    <div className={`flex-shrink-0 p-3 sm:p-4 rounded-xl ${stat.bgColor} shadow-sm`}>
+                      <Icon className={`h-6 w-6 sm:h-7 sm:w-7 ${stat.iconColor}`} strokeWidth={2.5} />
                     </div>
-                    <div className="flex-1">
-                      <dt className="text-sm font-medium text-gray-500 mb-1">
+                    <div className="flex-1 min-w-0">
+                      <dt className="text-xs sm:text-sm font-medium text-gray-500 mb-1 truncate">
                         {stat.name}
                       </dt>
-                      <dd className="text-3xl font-bold text-gray-900 mb-1">
+                      <dd className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
                         {stat.value}
                       </dd>
-                      <dd className="text-xs text-gray-500">
+                      <dd className="text-xs text-gray-500 truncate">
                         {stat.description}
                       </dd>
                     </div>
                   </div>
                   {stat.link && (
-                    <ArrowRight className={`h-5 w-5 ${stat.iconColor} opacity-50`} />
+                    <ArrowRight className={`h-4 w-4 sm:h-5 sm:w-5 ${stat.iconColor} opacity-50 flex-shrink-0 ml-2`} />
                   )}
                 </div>
               </div>

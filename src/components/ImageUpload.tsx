@@ -157,10 +157,10 @@ export default function ImageUpload({
         </label>
       )}
 
-      <div className="flex items-start gap-4">
+      <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
         {/* Preview de la imagen */}
         {preview ? (
-          <div className="relative">
+          <div className="relative flex-shrink-0">
             <div className={`${sizeClasses[previewSize]} ${shapeClasses[shape]} overflow-hidden border-2 border-gray-200 shadow-sm`}>
               <img
                 src={preview}
@@ -181,39 +181,39 @@ export default function ImageUpload({
             )}
           </div>
         ) : (
-          <div className={`${sizeClasses[previewSize]} ${shapeClasses[shape]} border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50`}>
+          <div className={`${sizeClasses[previewSize]} ${shapeClasses[shape]} border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50 flex-shrink-0`}>
             <ImageIcon className="h-8 w-8 text-gray-400" />
           </div>
         )}
 
         {/* Controles de subida/URL */}
-        <div className="flex-1 space-y-3">
+        <div className="flex-1 w-full sm:w-auto min-w-0 space-y-3">
           {/* Selector de modo */}
           {allowUrlInput && (
             <div className="flex rounded-lg border border-gray-300 p-1 bg-gray-50">
               <button
                 type="button"
                 onClick={() => setInputMode('upload')}
-                className={`flex-1 px-3 py-1.5 text-sm font-medium rounded-md transition-colors flex items-center justify-center ${
+                className={`flex-1 px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors flex items-center justify-center min-w-0 ${
                   inputMode === 'upload'
                     ? 'bg-white text-indigo-600 shadow-sm'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
-                <FileImage className="h-4 w-4 mr-1.5" />
-                Subir archivo
+                <FileImage className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-1.5 flex-shrink-0" />
+                <span className="truncate">Subir archivo</span>
               </button>
               <button
                 type="button"
                 onClick={() => setInputMode('url')}
-                className={`flex-1 px-3 py-1.5 text-sm font-medium rounded-md transition-colors flex items-center justify-center ${
+                className={`flex-1 px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors flex items-center justify-center min-w-0 ${
                   inputMode === 'url'
                     ? 'bg-white text-indigo-600 shadow-sm'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
-                <Link2 className="h-4 w-4 mr-1.5" />
-                Usar URL
+                <Link2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-1.5 flex-shrink-0" />
+                <span className="truncate">Usar URL</span>
               </button>
             </div>
           )}
@@ -233,17 +233,17 @@ export default function ImageUpload({
                 type="button"
                 onClick={handleClick}
                 disabled={uploading}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full sm:w-auto inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-xs sm:text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {uploading ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Subiendo...
+                    <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2 animate-spin flex-shrink-0" />
+                    <span className="truncate">Subiendo...</span>
                   </>
                 ) : (
                   <>
-                    <Upload className="h-4 w-4 mr-2" />
-                    {preview ? 'Cambiar imagen' : 'Subir imagen'}
+                    <Upload className="h-3 w-3 sm:h-4 sm:w-4 mr-2 flex-shrink-0" />
+                    <span className="truncate">{preview ? 'Cambiar imagen' : 'Subir imagen'}</span>
                   </>
                 )}
               </button>
@@ -256,7 +256,7 @@ export default function ImageUpload({
           {/* Modo: URL */}
           {inputMode === 'url' && (
             <div>
-              <div className="flex space-x-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="url"
                   value={urlInput}
@@ -269,12 +269,12 @@ export default function ImageUpload({
                     }
                   }}
                   placeholder="https://ejemplo.com/imagen.jpg"
-                  className="flex-1 block px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
+                  className="flex-1 min-w-0 block px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-xs sm:text-sm transition-colors"
                 />
                 <button
                   type="button"
                   onClick={handleUrlSubmit}
-                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                  className="w-full sm:w-auto inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-transparent rounded-lg shadow-sm text-xs sm:text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors whitespace-nowrap"
                 >
                   Aplicar
                 </button>
