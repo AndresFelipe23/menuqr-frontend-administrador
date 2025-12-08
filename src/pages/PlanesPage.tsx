@@ -3,10 +3,9 @@
  */
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, Loader2, Crown, Zap, Gift, ArrowUp, CreditCard, Sparkles, Calendar, TrendingUp } from 'lucide-react';
+import { Check, Loader2, Crown, Zap, Gift, ArrowUp, Sparkles, Calendar, TrendingUp } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { suscripcionesService } from '../services/suscripciones.service';
-import StripePaymentForm from '../components/StripePaymentForm';
 import WompiPaymentOption from '../components/WompiPaymentOption';
 import type { PlanType, Suscripcion } from '../types/api.types';
 
@@ -88,8 +87,10 @@ export default function PlanesPage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [selectedPlan, setSelectedPlan] = useState<PlanType | null>(null);
-  const [isAnnual, setIsAnnual] = useState(false);
-  const [paymentProvider, setPaymentProvider] = useState<'stripe' | 'wompi'>('stripe');
+  // Solo planes mensuales están disponibles por ahora
+  const isAnnual = false;
+  // Solo Wompi está disponible
+  const paymentProvider: 'wompi' = 'wompi';
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -131,35 +132,64 @@ export default function PlanesPage() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const wompiCallback = urlParams.get('wompi_callback');
-    const transactionId = urlParams.get('id');
-    const status = urlParams.get('status');
+    const status = urlParams.get('status') || urlParams.get('transaction_status');
 
-    if (wompiCallback === 'true' && transactionId) {
+    if (wompiCallback === 'true') {
       // El usuario regresó del link de pago de Wompi
-      // El webhook de Wompi debería haber procesado el pago, pero verificamos el estado
-      if (status === 'APPROVED') {
-        setSuccess(true);
-        // Recargar la suscripción para ver el estado actualizado
-        if (user?.restauranteId) {
-          setTimeout(async () => {
-            try {
-              const suscripcion = await suscripcionesService.obtenerPorRestauranteId(user.restauranteId!);
-              setSuscripcionActual(suscripcion);
-              // Limpiar los parámetros de la URL
+      // El webhook de Wompi debería haber procesado el pago
+      // Esperar un momento para que el webhook procese, luego verificar el estado
+      
+      const checkSubscriptionStatus = async () => {
+        if (!user?.restauranteId) return;
+
+        try {
+          // Esperar un poco para que el webhook procese
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          
+          // Recargar la suscripción para ver el estado actualizado
+          const suscripcion = await suscripcionesService.obtenerPorRestauranteId(user.restauranteId!);
+          setSuscripcionActual(suscripcion);
+
+          // Verificar el estado basado en la respuesta de Wompi y la suscripción
+          if (status === 'APPROVED' || status === 'APPROVED_PARTIAL' || (suscripcion && suscripcion.estado === 'active')) {
+            setSuccess(true);
+            // Limpiar los parámetros de la URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+            setTimeout(() => {
+              navigate('/dashboard');
+            }, 3000);
+          } else if (status === 'DECLINED' || status === 'VOIDED' || status === 'ERROR' || status === 'REJECTED') {
+            setError('El pago fue rechazado o falló. Por favor, intenta de nuevo.');
+            // Limpiar los parámetros de la URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+          } else if (status === 'PENDING') {
+            // El pago está pendiente, puede tomar unos minutos
+            setError('El pago está siendo procesado. Te notificaremos cuando se complete. Puedes cerrar esta ventana.');
+            // Limpiar los parámetros de la URL después de un tiempo
+            setTimeout(() => {
+              window.history.replaceState({}, document.title, window.location.pathname);
+            }, 5000);
+          } else {
+            // Estado desconocido, verificar la suscripción
+            if (suscripcion && suscripcion.estado === 'active') {
+              setSuccess(true);
               window.history.replaceState({}, document.title, window.location.pathname);
               setTimeout(() => {
                 navigate('/dashboard');
-              }, 2000);
-            } catch (err) {
-              console.error('Error al cargar suscripción después del pago:', err);
+              }, 3000);
+            } else {
+              setError('No se pudo verificar el estado del pago. Por favor, verifica tu suscripción más tarde.');
+              window.history.replaceState({}, document.title, window.location.pathname);
             }
-          }, 1000);
+          }
+        } catch (err) {
+          console.error('Error al verificar suscripción después del pago:', err);
+          setError('Error al verificar el estado del pago. Por favor, verifica tu suscripción más tarde.');
+          window.history.replaceState({}, document.title, window.location.pathname);
         }
-      } else if (status === 'DECLINED' || status === 'VOIDED' || status === 'ERROR') {
-        setError('El pago fue rechazado o falló. Por favor, intenta de nuevo.');
-        // Limpiar los parámetros de la URL
-        window.history.replaceState({}, document.title, window.location.pathname);
-      }
+      };
+
+      checkSubscriptionStatus();
     }
   }, [user?.restauranteId, navigate]);
 
@@ -380,67 +410,6 @@ export default function PlanesPage() {
           </div>
         )}
 
-        {/* Selector de período y método de pago (solo para planes de pago) */}
-        {selectedPlan && selectedPlan !== 'free' && (
-          <div className="flex flex-col items-center gap-4 sm:gap-6 mb-8 sm:mb-12">
-            {/* Selector de método de pago */}
-            <div className="bg-white rounded-xl p-1.5 border-2 border-gray-200 w-full sm:w-auto inline-flex shadow-sm">
-              <button
-                type="button"
-                onClick={() => setPaymentProvider('stripe')}
-                className={`flex-1 sm:flex-none px-4 sm:px-6 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center justify-center gap-2 ${
-                  paymentProvider === 'stripe'
-                    ? 'bg-green-600 text-white shadow-md'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <CreditCard className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                <span>Stripe</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setPaymentProvider('wompi')}
-                className={`flex-1 sm:flex-none px-4 sm:px-6 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center justify-center gap-2 ${
-                  paymentProvider === 'wompi'
-                    ? 'bg-green-600 text-white shadow-md'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <CreditCard className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                <span>Wompi</span>
-              </button>
-            </div>
-
-            {/* Selector de período */}
-            <div className="bg-white rounded-xl p-1.5 border-2 border-gray-200 w-full sm:w-auto inline-flex shadow-sm">
-              <button
-                type="button"
-                onClick={() => setIsAnnual(false)}
-                className={`flex-1 sm:flex-none px-4 sm:px-6 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
-                  !isAnnual
-                    ? 'bg-green-600 text-white shadow-md'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                Mensual
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsAnnual(true)}
-                className={`flex-1 sm:flex-none px-4 sm:px-6 py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all flex items-center justify-center gap-2 ${
-                  isAnnual
-                    ? 'bg-green-600 text-white shadow-md'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <span>Anual</span>
-                <span className="text-xs bg-green-700 text-white px-1.5 sm:px-2 py-0.5 rounded whitespace-nowrap">
-                  Ahorra 17%
-                </span>
-              </button>
-            </div>
-          </div>
-        )}
 
         {/* Grid de Planes */}
         {!selectedPlan && (
@@ -479,17 +448,24 @@ export default function PlanesPage() {
                     </h3>
                     <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">{plan.description}</p>
                     <div className="mb-2">
-                      <span className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
-                        {plan.priceMonthly}
-                      </span>
-                      <span className="text-gray-600 text-base sm:text-lg">/mes</span>
-                      <span className="text-xs sm:text-sm text-gray-500 ml-1">USD</span>
+                      {plan.id === 'free' ? (
+                        <>
+                          <span className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
+                            {plan.priceMonthly}
+                          </span>
+                          <span className="text-gray-600 text-base sm:text-lg">/mes</span>
+                          <span className="text-xs sm:text-sm text-gray-500 ml-1">USD</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
+                            {plan.id === 'pro' ? '$36,000' : '$56,000'}
+                          </span>
+                          <span className="text-gray-600 text-base sm:text-lg">/mes</span>
+                          <span className="text-xs sm:text-sm text-gray-500 ml-1">COP</span>
+                        </>
+                      )}
                     </div>
-                    {plan.priceAnnual !== '$0' && (
-                      <div className="text-xs sm:text-sm text-gray-500">
-                        o <span className="font-semibold">{plan.priceAnnual}</span>/año USD
-                      </div>
-                    )}
                   </div>
                   <ul className="space-y-2 sm:space-y-3 mb-6 sm:mb-8 min-h-[200px]">
                     {plan.features.map((feature, index) => (
@@ -553,24 +529,10 @@ export default function PlanesPage() {
                   Confirmar Suscripción {selectedPlan.toUpperCase()}
                 </h2>
                 <p className="text-sm sm:text-base text-green-50">
-                  {isAnnual ? 'Plan Anual' : 'Plan Mensual'} -{' '}
-                  {paymentProvider === 'wompi' ? (
-                    selectedPlan === 'pro'
-                      ? isAnnual
-                        ? '$360,000/año COP'
-                        : '$36,000/mes COP'
-                      : isAnnual
-                      ? '$560,000/año COP'
-                      : '$56,000/mes COP'
-                  ) : (
-                    selectedPlan === 'pro'
-                      ? isAnnual
-                        ? '$90/año USD'
-                        : '$9/mes USD'
-                      : isAnnual
-                      ? '$140/año USD'
-                      : '$14/mes USD'
-                  )}
+                  Plan Mensual -{' '}
+                  {selectedPlan === 'pro'
+                    ? '$36,000/mes COP'
+                    : '$56,000/mes COP'}
                 </p>
               </div>
 
@@ -581,21 +543,13 @@ export default function PlanesPage() {
                   </div>
                 )}
 
-                {paymentProvider === 'stripe' ? (
-                  <StripePaymentForm
-                    onSubmit={handlePaymentSubmit}
-                    onError={(err) => setError(err)}
-                    disabled={isProcessing}
-                  />
-                ) : (
-                  <WompiPaymentOption
-                    planType={selectedPlan}
-                    isAnnual={isAnnual}
-                    onSubmit={handlePaymentSubmit}
-                    onError={(err) => setError(err)}
-                    disabled={isProcessing}
-                  />
-                )}
+                <WompiPaymentOption
+                  planType={selectedPlan}
+                  isAnnual={isAnnual}
+                  onSubmit={handlePaymentSubmit}
+                  onError={(err) => setError(err)}
+                  disabled={isProcessing}
+                />
               </div>
             </div>
           </div>

@@ -239,8 +239,11 @@ export default function RestaurantPage() {
   // Construir URL pública del restaurante
   const getPublicUrl = () => {
     if (!restaurante?.slug) return null;
-    // En desarrollo usa localhost:4321, en producción usar variable de entorno o dominio configurado
-    const clienteBaseUrl = import.meta.env.VITE_CLIENTE_URL || 'http://localhost:4321';
+    // Determinar la URL base del cliente según el entorno
+    const clienteBaseUrl = import.meta.env.VITE_CLIENTE_URL || 
+      (import.meta.env.MODE === 'production'
+        ? 'https://menusqr.site'
+        : 'http://localhost:4321');
     return `${clienteBaseUrl}/${restaurante.slug}`;
   };
 
