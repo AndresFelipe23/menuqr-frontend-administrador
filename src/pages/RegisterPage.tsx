@@ -12,7 +12,6 @@ import {
   CheckCircle2,
   QrCode,
   Check,
-  Menu,
   Users,
   Clock
 } from 'lucide-react';

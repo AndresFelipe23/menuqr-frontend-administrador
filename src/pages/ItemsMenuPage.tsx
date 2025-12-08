@@ -951,7 +951,7 @@ export default function ItemsMenuPage() {
         <div>
           {/* Grid de cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {itemsFiltrados.map((item, index) => {
+            {itemsFiltrados.map((item) => {
               const itemsMismaCategoria = itemsFiltrados.filter(i => i.categoriaId === item.categoriaId).sort((a, b) => a.ordenVisualizacion - b.ordenVisualizacion);
               const itemIndex = itemsMismaCategoria.findIndex(i => i.id === item.id);
               const canMoveUp = itemIndex > 0;

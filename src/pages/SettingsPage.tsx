@@ -19,13 +19,12 @@ import {
   Eye,
   EyeOff,
   Info,
-  UserCircle,
 } from 'lucide-react';
 
 export default function SettingsPage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [loadingUser, setLoadingUser] = useState(false);
+  const [, setLoadingUser] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -673,9 +672,6 @@ export default function SettingsPage() {
                             className="p-3 bg-gray-50 rounded-lg border border-gray-200"
                           >
                             <p className="text-sm font-medium text-gray-900">{permiso.nombre}</p>
-                            {permiso.descripcion && (
-                              <p className="text-xs text-gray-500 mt-1">{permiso.descripcion}</p>
-                            )}
                             {permiso.modulo && (
                               <span className="inline-block mt-2 px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded">
                                 {permiso.modulo}

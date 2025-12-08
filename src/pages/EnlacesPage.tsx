@@ -13,7 +13,6 @@ import {
   Loader2,
   AlertCircle,
   CheckCircle2,
-  GripVertical,
   TrendingUp,
   MoveUp,
   MoveDown,

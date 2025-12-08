@@ -12,10 +12,7 @@ import {
   Loader2, 
   AlertCircle,
   QrCode,
-  Check,
-  Menu,
-  Users,
-  Clock
+  Check
 } from 'lucide-react';
 
 export default function RegisterRestaurantPage() {
@@ -103,7 +100,7 @@ export default function RegisterRestaurantPage() {
         correo: formData.correo || user?.email || '',
       };
 
-      const restaurante = await restaurantsService.crear(dto);
+      await restaurantsService.crear(dto);
       
       // El backend ya actualizó el usuario con el restaurante y le asignó el rol de Administrador
       // Sin embargo, el token JWT actual no incluye el nuevo rol, por lo que necesitamos

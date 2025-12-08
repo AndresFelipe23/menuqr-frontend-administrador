@@ -219,12 +219,6 @@ export default function AdicionesPage() {
     return adiciones.filter(a => a.esObligatorio).length;
   };
 
-  const getPrecioPromedio = () => {
-    const conPrecio = adiciones.filter(a => a.precio > 0);
-    if (conPrecio.length === 0) return 0;
-    const suma = conPrecio.reduce((sum, adicion) => sum + adicion.precio, 0);
-    return suma / conPrecio.length;
-  };
 
   if (!user?.restauranteId) {
     return (

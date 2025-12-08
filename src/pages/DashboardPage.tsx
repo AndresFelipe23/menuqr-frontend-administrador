@@ -17,9 +17,7 @@ import {
   Users, 
   Menu as MenuIcon, 
   ClipboardList,
-  TrendingUp,
   Clock,
-  CheckCircle2,
   Package,
   LayoutDashboard
 } from 'lucide-react';
@@ -81,7 +79,7 @@ export default function DashboardPage() {
           }).length;
 
           const pedidosPendientes = pedidosData.filter((p: PedidoCompleto) => 
-            p.estado === 'pendiente' || p.estado === 'confirmado' || p.estado === 'en_preparacion'
+            p.estado === 'pendiente' || p.estado === 'pendiente_confirmacion' || p.estado === 'confirmado' || p.estado === 'preparando'
           ).length;
 
           const pedidosCompletados = pedidosData.filter((p: PedidoCompleto) => 

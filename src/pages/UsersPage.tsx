@@ -12,12 +12,10 @@ import {
   Loader2,
   AlertCircle,
   CheckCircle2,
-  Mail,
   Phone,
   Shield,
   Building,
   CheckCircle,
-  XCircle,
   Users,
   UserCheck,
   UserX,
@@ -684,7 +682,12 @@ export default function UsersPage() {
                             {getNombreCompleto(usuario)}
                           </h3>
                           {usuario.correoVerificado && (
-                            <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" title="Correo verificado" />
+                            <div className="relative group">
+                              <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
+                              <span className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                Correo verificado
+                              </span>
+                            </div>
                           )}
                         </div>
                         <p className="text-sm text-gray-500 truncate mt-0.5">{usuario.correo}</p>

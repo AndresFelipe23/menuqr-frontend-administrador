@@ -19,7 +19,7 @@ import type { Restaurante } from '../types/api.types';
 
 export default function LandingPage() {
   const [restaurantes, setRestaurantes] = useState<Restaurante[]>([]);
-  const [loadingRestaurantes, setLoadingRestaurantes] = useState(true);
+  const [, setLoadingRestaurantes] = useState(true);
 
   useEffect(() => {
     const cargarRestaurantes = async () => {

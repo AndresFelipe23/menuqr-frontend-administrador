@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { ArrowLeft, Mail, Lock, LogIn, Loader2, AlertCircle, QrCode, Check, Menu, Users, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Mail, Lock, LogIn, Loader2, AlertCircle, QrCode, Menu, Users, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 
 export default function LoginPage() {
   const navigate = useNavigate();
