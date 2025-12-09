@@ -190,7 +190,7 @@ export default function PlanesPage() {
               // Si el pago fue exitoso pero la suscripción sigue incomplete, mostrar mensaje con botón
               // El webhook puede tardar un poco más
               // No establecer error aquí, en su lugar mostrar un mensaje informativo en el UI
-              Logger.info('Pago procesado pero suscripción aún no activa, puede tardar unos segundos más');
+              console.log('Pago procesado pero suscripción aún no activa, puede tardar unos segundos más');
               window.history.replaceState({}, document.title, window.location.pathname);
             }
           }
