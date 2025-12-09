@@ -109,13 +109,20 @@ export default function WompiPaymentForm({ onSubmit, onError, disabled }: WompiP
       
       // Aquí crearíamos el token usando la API de Wompi o su widget
       // Por ahora, pasamos un identificador temporal que el backend procesará
+
+      // Wompi requiere exp_year en formato de 2 dígitos (ej: "25" para 2025)
+      // Si el usuario ingresó 4 dígitos, tomar los últimos 2
+      const expYear = cardData.exp_year.length === 4
+        ? cardData.exp_year.slice(-2)
+        : cardData.exp_year;
+
       const paymentToken = JSON.stringify({
         type: 'wompi',
         cardData: {
           number: cardData.number.replace(/\s/g, ''),
           cvc: cardData.cvc,
-          exp_month: cardData.exp_month,
-          exp_year: cardData.exp_year,
+          exp_month: cardData.exp_month.padStart(2, '0'), // Asegurar 2 dígitos (ej: "01", "12")
+          exp_year: expYear,
           card_holder: cardData.card_holder,
         },
       });
@@ -198,7 +205,7 @@ export default function WompiPaymentForm({ onSubmit, onError, disabled }: WompiP
                   const value = e.target.value.replace(/\D/g, '').slice(0, 4);
                   handleInputChange('exp_year', value);
                 }}
-                placeholder="AAAA"
+                placeholder="AA o AAAA"
                 maxLength={4}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 disabled={isProcessing || disabled}
