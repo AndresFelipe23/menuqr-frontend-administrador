@@ -5,7 +5,7 @@
  * debido a problemas con la configuración del webhook en desarrollo.
  * Para reactivarla, descomentar las secciones marcadas con "PAYMENT LINK"
  */
-import { useState } from 'react';
+// import { useState } from 'react'; // PAYMENT LINK: Descomentar para reactivar
 // import { ExternalLink, Loader2 } from 'lucide-react'; // PAYMENT LINK: Descomentar para reactivar
 import WompiPaymentForm from './WompiPaymentForm';
 import type { PlanType } from '../types/api.types';
@@ -19,8 +19,8 @@ interface WompiPaymentOptionProps {
 }
 
 export default function WompiPaymentOption({
-  planType,
-  isAnnual,
+  planType: _planType, // PAYMENT LINK: Remover el _ cuando se reactive
+  isAnnual: _isAnnual, // PAYMENT LINK: Remover el _ cuando se reactive
   onSubmit,
   onError,
   disabled,
@@ -42,7 +42,7 @@ export default function WompiPaymentOption({
 
       // Obtener el link de pago del backend
       const response = await fetch(
-        `${baseUrl}/suscripciones/wompi/payment-link?plan=${planType}&annual=${isAnnual}`,
+        `${baseUrl}/suscripciones/wompi/payment-link?plan=${_planType}&annual=${_isAnnual}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -80,7 +80,7 @@ export default function WompiPaymentOption({
           // Guardar la referencia en localStorage para recuperarla después
           if (reference) {
             localStorage.setItem('wompi_payment_reference', reference);
-            localStorage.setItem('wompi_payment_plan', planType);
+            localStorage.setItem('wompi_payment_plan', _planType);
           }
 
           console.log('🔗 URL con redirect_url:', url.toString());
