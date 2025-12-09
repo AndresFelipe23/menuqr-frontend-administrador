@@ -1,8 +1,12 @@
 /**
- * Componente para elegir entre formulario de pago directo o link de pago de Wompi
+ * Componente para el formulario de pago directo de Wompi
+ *
+ * NOTA: La funcionalidad de Payment Link está comentada temporalmente
+ * debido a problemas con la configuración del webhook en desarrollo.
+ * Para reactivarla, descomentar las secciones marcadas con "PAYMENT LINK"
  */
 import { useState } from 'react';
-import { ExternalLink, CreditCard, Loader2 } from 'lucide-react';
+// import { ExternalLink, Loader2 } from 'lucide-react'; // PAYMENT LINK: Descomentar para reactivar
 import WompiPaymentForm from './WompiPaymentForm';
 import type { PlanType } from '../types/api.types';
 
@@ -21,19 +25,21 @@ export default function WompiPaymentOption({
   onError,
   disabled,
 }: WompiPaymentOptionProps) {
-  const [paymentMethod, setPaymentMethod] = useState<'form' | 'link'>('link');
-  const [isRedirecting, setIsRedirecting] = useState(false);
+  // PAYMENT LINK: Descomentar estas líneas para reactivar
+  // const [paymentMethod, setPaymentMethod] = useState<'form' | 'link'>('link');
+  // const [isRedirecting, setIsRedirecting] = useState(false);
 
+  /* PAYMENT LINK: Funcionalidad comentada temporalmente
   const handleRedirectToPaymentLink = async () => {
     setIsRedirecting(true);
     try {
       const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5290/api';
       const token = localStorage.getItem('token') || localStorage.getItem('accessToken');
-      
+
       if (!token) {
         throw new Error('No se encontró el token de autenticación. Por favor, inicia sesión nuevamente.');
       }
-      
+
       // Obtener el link de pago del backend
       const response = await fetch(
         `${baseUrl}/suscripciones/wompi/payment-link?plan=${planType}&annual=${isAnnual}`,
@@ -44,41 +50,41 @@ export default function WompiPaymentOption({
           },
         }
       );
-      
+
       const data = await response.json();
-      
+
       if (!response.ok) {
         const errorMessage = data.message || data.error || 'No se pudo obtener el link de pago';
         console.error('Error al obtener payment link:', data);
         throw new Error(errorMessage);
       }
-      
+
       if (data.data && data.data.paymentLink) {
         const paymentLinkUrl = data.data.paymentLink;
         const reference = data.data.reference;
-        
+
         // Log para debugging
         console.log('🔗 Redirigiendo a payment link de Wompi:', paymentLinkUrl);
         console.log('📋 Reference:', reference);
-        
+
         // Validar que la URL sea válida
         try {
           const url = new URL(paymentLinkUrl);
           console.log('✅ URL válida, dominio:', url.hostname);
-          
+
           // Intentar agregar parámetros de redirección si Wompi lo soporta
           // Algunos payment links de Wompi permiten redirect_url como parámetro
           const redirectUrl = `${window.location.origin}/dashboard/planes?wompi_callback=true&reference=${encodeURIComponent(reference || '')}`;
           url.searchParams.set('redirect_url', redirectUrl);
-          
+
           // Guardar la referencia en localStorage para recuperarla después
           if (reference) {
             localStorage.setItem('wompi_payment_reference', reference);
             localStorage.setItem('wompi_payment_plan', planType);
           }
-          
+
           console.log('🔗 URL con redirect_url:', url.toString());
-          
+
           // Redirigir al link de pago de Wompi
           // Nota: Si Wompi no acepta redirect_url como parámetro, el usuario será redirigido
           // a la página por defecto de Wompi después del pago, y deberá volver manualmente
@@ -100,10 +106,11 @@ export default function WompiPaymentOption({
       }
     }
   };
+  */// FIN PAYMENT LINK
 
   return (
     <div className="space-y-6">
-      {/* Selector de método de pago */}
+      {/* PAYMENT LINK: Selector de método de pago comentado temporalmente
       <div className="bg-gray-50 rounded-lg p-4">
         <label className="block text-sm font-medium text-gray-700 mb-3">
           Método de pago con Wompi
@@ -143,8 +150,9 @@ export default function WompiPaymentOption({
           </button>
         </div>
       </div>
+      */}
 
-      {/* Opción 1: Link de pago (recomendado) */}
+      {/* PAYMENT LINK: Opción 1 comentada temporalmente
       {paymentMethod === 'link' && (
         <div className="space-y-4">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -172,22 +180,14 @@ export default function WompiPaymentOption({
           </div>
         </div>
       )}
+      */}
 
-      {/* Opción 2: Formulario de pago directo */}
-      {paymentMethod === 'form' && (
-        <div className="space-y-4">
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <p className="text-sm text-yellow-800">
-              <strong>Nota:</strong> Esta opción requiere configuración adicional. Es recomendable usar el Link de Pago.
-            </p>
-          </div>
-          <WompiPaymentForm
-            onSubmit={onSubmit}
-            onError={onError}
-            disabled={disabled}
-          />
-        </div>
-      )}
+      {/* Formulario de pago directo - Ahora es la única opción */}
+      <WompiPaymentForm
+        onSubmit={onSubmit}
+        onError={onError}
+        disabled={disabled}
+      />
     </div>
   );
 }

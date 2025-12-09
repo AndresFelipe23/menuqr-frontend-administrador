@@ -3,7 +3,7 @@
  * Wompi es una pasarela de pagos disponible en Colombia
  */
 import { useState, useEffect } from 'react';
-import { CreditCard, Loader2 } from 'lucide-react';
+import { CreditCard, Loader2, Shield, Lock, CheckCircle } from 'lucide-react';
 
 // Tipos de datos de tarjeta para Wompi
 interface WompiCardData {
@@ -155,6 +155,35 @@ export default function WompiPaymentForm({ onSubmit, onError, disabled }: WompiP
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Mensaje de seguridad destacado */}
+      <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-4">
+        <div className="flex items-start gap-3">
+          <div className="flex-shrink-0">
+            <Shield className="h-6 w-6 text-green-600" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-sm font-semibold text-green-900 mb-2 flex items-center gap-2">
+              <Lock className="h-4 w-4" />
+              Pago 100% Seguro
+            </h3>
+            <ul className="space-y-1.5 text-xs text-green-800">
+              <li className="flex items-start gap-2">
+                <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0 mt-0.5" />
+                <span><strong>Tus datos están protegidos:</strong> Utilizamos tecnología de encriptación de última generación para proteger tu información.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0 mt-0.5" />
+                <span><strong>No guardamos tu tarjeta:</strong> Los datos de tu tarjeta son procesados directamente por Wompi, una pasarela de pagos certificada.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0 mt-0.5" />
+                <span><strong>Cumplimiento PCI DSS:</strong> Wompi cumple con los estándares internacionales de seguridad para el procesamiento de pagos.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
       <div className="border border-gray-300 rounded-lg p-4 bg-white space-y-4">
         <label className="block text-sm font-medium text-gray-700">
           Nombre del Titular
@@ -253,24 +282,52 @@ export default function WompiPaymentForm({ onSubmit, onError, disabled }: WompiP
       <button
         type="submit"
         disabled={isProcessing || disabled}
-        className="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
+        className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 text-white py-3 px-4 rounded-lg font-semibold hover:from-indigo-700 hover:to-indigo-800 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]"
       >
         {isProcessing ? (
           <>
             <Loader2 className="h-5 w-5 animate-spin" />
-            Procesando...
+            Procesando Pago Seguro...
           </>
         ) : (
           <>
+            <Lock className="h-5 w-5" />
             <CreditCard className="h-5 w-5" />
-            Confirmar Pago
+            Confirmar Pago Seguro
           </>
         )}
       </button>
 
-      <p className="text-xs text-gray-500 text-center">
-        🔒 Tus datos de pago están protegidos por Wompi. No almacenamos información de tarjetas.
-      </p>
+      {/* Información adicional de seguridad */}
+      <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+        <div className="flex items-start gap-2">
+          <Shield className="h-5 w-5 text-indigo-600 flex-shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-gray-800">
+              Procesamiento seguro por Wompi
+            </p>
+            <p className="text-xs text-gray-600">
+              Wompi es una pasarela de pagos certificada que cumple con todos los estándares de seguridad internacionales.
+              Tu información de pago nunca se almacena en nuestros servidores.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-center gap-4 pt-2">
+        <div className="flex items-center gap-1.5 text-xs text-gray-500">
+          <Lock className="h-3.5 w-3.5 text-green-600" />
+          <span>Encriptación SSL</span>
+        </div>
+        <div className="flex items-center gap-1.5 text-xs text-gray-500">
+          <Shield className="h-3.5 w-3.5 text-green-600" />
+          <span>PCI DSS Certificado</span>
+        </div>
+        <div className="flex items-center gap-1.5 text-xs text-gray-500">
+          <CheckCircle className="h-3.5 w-3.5 text-green-600" />
+          <span>Datos Protegidos</span>
+        </div>
+      </div>
     </form>
   );
 }
