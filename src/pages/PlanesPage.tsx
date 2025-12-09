@@ -308,8 +308,11 @@ export default function PlanesPage() {
   const planActual = suscripcionActual 
     ? plans.find(p => p.id === suscripcionActual.tipoPlan)
     : null;
+  
+  // Determinar qué planes mostrar según el estado de la suscripción
   const planesDisponibles = suscripcionActual && suscripcionActual.estado === 'active'
     ? plans.filter(p => {
+        // Si tiene una suscripción activa, solo mostrar planes superiores
         // Si tiene FREE, puede ir a PRO o PREMIUM
         if (suscripcionActual.tipoPlan === 'free') {
           return p.id === 'pro' || p.id === 'premium';
@@ -321,7 +324,15 @@ export default function PlanesPage() {
         // Si tiene PREMIUM, no hay planes superiores
         return false;
       })
-    : plans;
+    : // Si no hay suscripción activa (null, incomplete, pending), mostrar todos los planes de pago
+    plans.filter(p => {
+        // Si hay una suscripción incomplete/pending, no mostrar el plan FREE (ya lo tienen)
+        if (suscripcionActual && suscripcionActual.estado !== 'active' && suscripcionActual.tipoPlan === 'free') {
+          return p.id === 'pro' || p.id === 'premium';
+        }
+        // Mostrar todos los planes si no hay suscripción o es free
+        return true;
+      });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -511,6 +522,12 @@ export default function PlanesPage() {
                         <ArrowUp className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
                         <span className="truncate">Actualizar a {plan.name}</span>
                       </>
+                    ) : suscripcionActual && (suscripcionActual.estado === 'incomplete' || suscripcionActual.estado === 'pending') ? (
+                      plan.id === 'free' ? (
+                        'Plan Gratis (Ya tienes)'
+                      ) : (
+                        `Continuar con ${plan.name}`
+                      )
                     ) : plan.id === 'free' ? (
                       'Seleccionar Gratis'
                     ) : (
