@@ -148,7 +148,7 @@ function PaymentForm({ onSubmit, onError, disabled }: StripePaymentFormProps) {
  * 
  * COMENTADO: Solo se usa Wompi actualmente. Para reactivar Stripe, descomenta todo el código.
  */
-export default function StripePaymentForm(props: any) {
+export default function StripePaymentForm(_props: any) {
   // Componente comentado - solo retorna null
   return null;
   

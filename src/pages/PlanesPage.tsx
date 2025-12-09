@@ -132,12 +132,10 @@ export default function PlanesPage() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const wompiCallback = urlParams.get('wompi_callback');
-    const reference = urlParams.get('reference');
     const status = urlParams.get('status') || urlParams.get('transaction_status');
 
     // También verificar si hay una referencia guardada en localStorage (por si el redirect_url no funcionó)
     const savedReference = localStorage.getItem('wompi_payment_reference');
-    const savedPlan = localStorage.getItem('wompi_payment_plan');
 
     if (wompiCallback === 'true' || savedReference) {
       // El usuario regresó del link de pago de Wompi
