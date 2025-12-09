@@ -132,19 +132,30 @@ export default function PlanesPage() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const wompiCallback = urlParams.get('wompi_callback');
+    const reference = urlParams.get('reference');
     const status = urlParams.get('status') || urlParams.get('transaction_status');
 
-    if (wompiCallback === 'true') {
+    // También verificar si hay una referencia guardada en localStorage (por si el redirect_url no funcionó)
+    const savedReference = localStorage.getItem('wompi_payment_reference');
+    const savedPlan = localStorage.getItem('wompi_payment_plan');
+
+    if (wompiCallback === 'true' || savedReference) {
       // El usuario regresó del link de pago de Wompi
       // El webhook de Wompi debería haber procesado el pago
       // Esperar un momento para que el webhook procese, luego verificar el estado
+      
+      // Limpiar localStorage si hay callback en la URL
+      if (wompiCallback === 'true' && savedReference) {
+        localStorage.removeItem('wompi_payment_reference');
+        localStorage.removeItem('wompi_payment_plan');
+      }
       
       const checkSubscriptionStatus = async () => {
         if (!user?.restauranteId) return;
 
         try {
-          // Esperar un poco para que el webhook procese
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          // Esperar un poco para que el webhook procese (aumentar a 3 segundos)
+          await new Promise(resolve => setTimeout(resolve, 3000));
           
           // Recargar la suscripción para ver el estado actualizado
           const suscripcion = await suscripcionesService.obtenerPorRestauranteId(user.restauranteId!);

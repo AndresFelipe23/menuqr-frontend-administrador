@@ -1,6 +1,11 @@
 /**
  * Componente de formulario de pago con Stripe Elements
+ * 
+ * NOTA: Este componente está COMENTADO temporalmente.
+ * Solo se usa Wompi como método de pago actualmente.
+ * Para reactivarlo, descomenta todo el código y actualiza PlanesPage.
  */
+/*
 import { useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import {
@@ -20,7 +25,9 @@ function getStripePromise(publishableKey: string) {
   }
   return stripePromise;
 }
+*/
 
+/*
 interface StripePaymentFormProps {
   onSubmit: (paymentMethodId: string) => Promise<void>;
   onError?: (error: string) => void;
@@ -30,6 +37,7 @@ interface StripePaymentFormProps {
 /**
  * Componente interno que maneja el formulario de pago
  */
+/*
 function PaymentForm({ onSubmit, onError, disabled }: StripePaymentFormProps) {
   const stripe = useStripe();
   const elements = useElements();
@@ -133,11 +141,18 @@ function PaymentForm({ onSubmit, onError, disabled }: StripePaymentFormProps) {
     </form>
   );
 }
+*/
 
 /**
  * Componente wrapper que proporciona el contexto de Stripe Elements
+ * 
+ * COMENTADO: Solo se usa Wompi actualmente. Para reactivar Stripe, descomenta todo el código.
  */
-export default function StripePaymentForm(props: StripePaymentFormProps) {
+export default function StripePaymentForm(props: any) {
+  // Componente comentado - solo retorna null
+  return null;
+  
+  /*
   const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 
   if (!publishableKey) {
@@ -155,5 +170,6 @@ export default function StripePaymentForm(props: StripePaymentFormProps) {
       <PaymentForm {...props} />
     </Elements>
   );
+  */
 }
 

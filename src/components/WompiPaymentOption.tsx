@@ -54,10 +54,42 @@ export default function WompiPaymentOption({
       }
       
       if (data.data && data.data.paymentLink) {
-        // Redirigir al link de pago de Wompi
-        window.location.href = data.data.paymentLink;
-        // No resetear isRedirecting aquí porque la página se está redirigiendo
+        const paymentLinkUrl = data.data.paymentLink;
+        const reference = data.data.reference;
+        
+        // Log para debugging
+        console.log('🔗 Redirigiendo a payment link de Wompi:', paymentLinkUrl);
+        console.log('📋 Reference:', reference);
+        
+        // Validar que la URL sea válida
+        try {
+          const url = new URL(paymentLinkUrl);
+          console.log('✅ URL válida, dominio:', url.hostname);
+          
+          // Intentar agregar parámetros de redirección si Wompi lo soporta
+          // Algunos payment links de Wompi permiten redirect_url como parámetro
+          const redirectUrl = `${window.location.origin}/dashboard/planes?wompi_callback=true&reference=${encodeURIComponent(reference || '')}`;
+          url.searchParams.set('redirect_url', redirectUrl);
+          
+          // Guardar la referencia en localStorage para recuperarla después
+          if (reference) {
+            localStorage.setItem('wompi_payment_reference', reference);
+            localStorage.setItem('wompi_payment_plan', planType);
+          }
+          
+          console.log('🔗 URL con redirect_url:', url.toString());
+          
+          // Redirigir al link de pago de Wompi
+          // Nota: Si Wompi no acepta redirect_url como parámetro, el usuario será redirigido
+          // a la página por defecto de Wompi después del pago, y deberá volver manualmente
+          window.location.href = url.toString();
+          // No resetear isRedirecting aquí porque la página se está redirigiendo
+        } catch (urlError) {
+          console.error('❌ URL de payment link inválida:', paymentLinkUrl);
+          throw new Error('La URL del link de pago es inválida');
+        }
       } else {
+        console.error('❌ Respuesta del servidor no contiene paymentLink:', data);
         throw new Error('El link de pago no está disponible en la respuesta del servidor');
       }
     } catch (error: any) {

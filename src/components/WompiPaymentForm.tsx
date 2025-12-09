@@ -111,10 +111,16 @@ export default function WompiPaymentForm({ onSubmit, onError, disabled }: WompiP
       // Por ahora, pasamos un identificador temporal que el backend procesará
 
       // Wompi requiere exp_year en formato de 2 dígitos (ej: "25" para 2025)
-      // Si el usuario ingresó 4 dígitos, tomar los últimos 2
+      // El campo ahora solo permite 2 dígitos, pero mantenemos el fallback por seguridad
       const expYear = cardData.exp_year.length === 4
         ? cardData.exp_year.slice(-2)
         : cardData.exp_year;
+
+      // Validar que el año tenga 2 dígitos
+      if (expYear.length !== 2) {
+        setError('El año de expiración debe tener 2 dígitos (ej: 25)');
+        return;
+      }
 
       const paymentToken = JSON.stringify({
         type: 'wompi',
@@ -202,16 +208,20 @@ export default function WompiPaymentForm({ onSubmit, onError, disabled }: WompiP
                 type="text"
                 value={cardData.exp_year}
                 onChange={(e) => {
-                  const value = e.target.value.replace(/\D/g, '').slice(0, 4);
+                  // Solo permitir 2 dígitos para el año (ej: 25 para 2025)
+                  const value = e.target.value.replace(/\D/g, '').slice(0, 2);
                   handleInputChange('exp_year', value);
                 }}
-                placeholder="AA o AAAA"
-                maxLength={4}
+                placeholder="AA"
+                maxLength={2}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 disabled={isProcessing || disabled}
                 required
               />
             </div>
+            <p className="text-xs text-gray-500 mt-1">
+              Ingresa el año con 2 dígitos (ej: 25 para 2025)
+            </p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
