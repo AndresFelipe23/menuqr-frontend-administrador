@@ -187,7 +187,10 @@ export default function PlanesPage() {
                 navigate('/dashboard');
               }, 3000);
             } else {
-              setError('No se pudo verificar el estado del pago. Por favor, verifica tu suscripción más tarde.');
+              // Si el pago fue exitoso pero la suscripción sigue incomplete, mostrar mensaje con botón
+              // El webhook puede tardar un poco más
+              // No establecer error aquí, en su lugar mostrar un mensaje informativo en el UI
+              Logger.info('Pago procesado pero suscripción aún no activa, puede tardar unos segundos más');
               window.history.replaceState({}, document.title, window.location.pathname);
             }
           }
@@ -549,6 +552,41 @@ export default function PlanesPage() {
                 {error && (
                   <div className="bg-red-50 border-2 border-red-200 text-red-700 text-sm sm:text-base px-3 sm:px-4 py-2 sm:py-3 rounded-lg mb-4 sm:mb-6 break-words">
                     {error}
+                  </div>
+                )}
+
+                {/* Mensaje informativo si el pago fue exitoso pero la suscripción aún no se activó */}
+                {!error && !success && suscripcionActual && suscripcionActual.estado === 'incomplete' && (
+                  <div className="bg-yellow-50 border-2 border-yellow-200 text-yellow-800 text-sm sm:text-base px-3 sm:px-4 py-2 sm:py-3 rounded-lg mb-4 sm:mb-6">
+                    <p className="mb-3">
+                      El pago fue procesado exitosamente. La suscripción se está activando y puede tardar unos segundos.
+                    </p>
+                    <div className="flex flex-wrap gap-3">
+                      <button
+                        onClick={async () => {
+                          // Recargar la suscripción
+                          try {
+                            const susc = await suscripcionesService.obtenerPorRestauranteId(user!.restauranteId!);
+                            setSuscripcionActual(susc);
+                            if (susc && susc.estado === 'active') {
+                              setSuccess(true);
+                              setTimeout(() => navigate('/dashboard'), 2000);
+                            }
+                          } catch (err) {
+                            console.error('Error al verificar suscripción:', err);
+                          }
+                        }}
+                        className="text-yellow-900 underline font-medium hover:text-yellow-950"
+                      >
+                        Verificar estado
+                      </button>
+                      <button
+                        onClick={() => navigate('/dashboard')}
+                        className="inline-flex items-center px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
+                      >
+                        Ir al Dashboard
+                      </button>
+                    </div>
                   </div>
                 )}
 
