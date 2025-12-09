@@ -1,7 +1,7 @@
 /**
  * Página de selección de planes de suscripción
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, Loader2, Crown, Zap, Gift, ArrowUp, Sparkles, Calendar, TrendingUp } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
@@ -96,6 +96,8 @@ export default function PlanesPage() {
   const [success, setSuccess] = useState(false);
   const [suscripcionActual, setSuscripcionActual] = useState<Suscripcion | null>(null);
   const [loadingSuscripcion, setLoadingSuscripcion] = useState(true);
+  // Ref para evitar que el callback handler se ejecute múltiples veces
+  const callbackProcessedRef = useRef<string | false>(false);
 
   useEffect(() => {
     // Solo redirigir si ya terminó de cargar y no hay usuario
@@ -130,67 +132,91 @@ export default function PlanesPage() {
 
   // Manejar callback de Wompi después del pago
   useEffect(() => {
+    // Solo ejecutar si el usuario ya está cargado y la suscripción ya se cargó
+    if (!user?.restauranteId || loadingSuscripcion) return;
+
     const urlParams = new URLSearchParams(window.location.search);
     const wompiCallback = urlParams.get('wompi_callback');
     const status = urlParams.get('status') || urlParams.get('transaction_status');
+    const reference = urlParams.get('reference');
 
-    // También verificar si hay una referencia guardada en localStorage (por si el redirect_url no funcionó)
-    const savedReference = localStorage.getItem('wompi_payment_reference');
+    // Limpiar localStorage si no hay callback válido (datos antiguos)
+    if (!wompiCallback && !reference && !status) {
+      localStorage.removeItem('wompi_payment_reference');
+      localStorage.removeItem('wompi_payment_plan');
+      return;
+    }
 
-    if (wompiCallback === 'true' || savedReference) {
-      // El usuario regresó del link de pago de Wompi
-      // El webhook de Wompi debería haber procesado el pago
-      // Esperar un momento para que el webhook procese, luego verificar el estado
-      
-      // Limpiar localStorage si hay callback en la URL
-      if (wompiCallback === 'true' && savedReference) {
-        localStorage.removeItem('wompi_payment_reference');
-        localStorage.removeItem('wompi_payment_plan');
+    // Solo procesar si hay un callback explícito en la URL
+    if (wompiCallback === 'true' || reference || status) {
+      // Verificar si ya se procesó este callback (evitar ejecuciones múltiples)
+      const callbackKey = `${wompiCallback || ''}_${reference || ''}_${status || ''}`;
+      if (callbackProcessedRef.current === callbackKey) {
+        return; // Ya se procesó este callback
       }
       
+      // Marcar como procesado para evitar ejecuciones múltiples
+      callbackProcessedRef.current = callbackKey;
+      
+      // Guardar el estado INICIAL de la suscripción ANTES de verificar
+      // Esto es crítico para detectar cambios
+      const estadoInicial = suscripcionActual?.estado || null;
+      
+      // Limpiar localStorage cuando hay un callback válido
+      localStorage.removeItem('wompi_payment_reference');
+      localStorage.removeItem('wompi_payment_plan');
+      
       const checkSubscriptionStatus = async () => {
-        if (!user?.restauranteId) return;
-
         try {
-          // Esperar un poco para que el webhook procese (aumentar a 3 segundos)
+          // Esperar un poco para que el webhook procese (3 segundos)
           await new Promise(resolve => setTimeout(resolve, 3000));
           
           // Recargar la suscripción para ver el estado actualizado
-          const suscripcion = await suscripcionesService.obtenerPorRestauranteId(user.restauranteId!);
-          setSuscripcionActual(suscripcion);
+          const suscripcionNueva = await suscripcionesService.obtenerPorRestauranteId(user.restauranteId!);
+          setSuscripcionActual(suscripcionNueva);
 
-          // Verificar el estado basado en la respuesta de Wompi y la suscripción
-          if (status === 'APPROVED' || status === 'APPROVED_PARTIAL' || (suscripcion && suscripcion.estado === 'active')) {
-            setSuccess(true);
-            // Limpiar los parámetros de la URL
-            window.history.replaceState({}, document.title, window.location.pathname);
-            setTimeout(() => {
-              navigate('/dashboard');
-            }, 3000);
-          } else if (status === 'DECLINED' || status === 'VOIDED' || status === 'ERROR' || status === 'REJECTED') {
-            setError('El pago fue rechazado o falló. Por favor, intenta de nuevo.');
-            // Limpiar los parámetros de la URL
-            window.history.replaceState({}, document.title, window.location.pathname);
-          } else if (status === 'PENDING') {
-            // El pago está pendiente, puede tomar unos minutos
-            setError('El pago está siendo procesado. Te notificaremos cuando se complete. Puedes cerrar esta ventana.');
-            // Limpiar los parámetros de la URL después de un tiempo
-            setTimeout(() => {
-              window.history.replaceState({}, document.title, window.location.pathname);
-            }, 5000);
-          } else {
-            // Estado desconocido, verificar la suscripción
-            if (suscripcion && suscripcion.estado === 'active') {
+          // Solo mostrar éxito si:
+          // 1. Hubo un cambio de incomplete a active (indicando un nuevo pago exitoso)
+          const huboCambioDeIncompleteAActive = 
+            estadoInicial === 'incomplete' && 
+            suscripcionNueva && 
+            suscripcionNueva.estado === 'active';
+
+          // Verificar el estado basado en la respuesta de Wompi
+          if (status === 'APPROVED' || status === 'APPROVED_PARTIAL') {
+            // Si Wompi dice que fue aprobado Y hubo cambio, mostrar éxito
+            if (huboCambioDeIncompleteAActive) {
               setSuccess(true);
               window.history.replaceState({}, document.title, window.location.pathname);
               setTimeout(() => {
                 navigate('/dashboard');
               }, 3000);
             } else {
-              // Si el pago fue exitoso pero la suscripción sigue incomplete, mostrar mensaje con botón
-              // El webhook puede tardar un poco más
-              // No establecer error aquí, en su lugar mostrar un mensaje informativo en el UI
-              console.log('Pago procesado pero suscripción aún no activa, puede tardar unos segundos más');
+              // El pago fue aprobado pero no hubo cambio (puede ser un pago duplicado o ya procesado)
+              console.log('Pago aprobado pero no se detectó cambio. Estado inicial:', estadoInicial, 'Estado nuevo:', suscripcionNueva?.estado);
+              // Limpiar URL pero no mostrar éxito
+              window.history.replaceState({}, document.title, window.location.pathname);
+            }
+          } else if (status === 'DECLINED' || status === 'VOIDED' || status === 'ERROR' || status === 'REJECTED') {
+            setError('El pago fue rechazado o falló. Por favor, intenta de nuevo.');
+            window.history.replaceState({}, document.title, window.location.pathname);
+          } else if (status === 'PENDING') {
+            // El pago está pendiente, puede tomar unos minutos
+            setError('El pago está siendo procesado. Te notificaremos cuando se complete. Puedes cerrar esta ventana.');
+            setTimeout(() => {
+              window.history.replaceState({}, document.title, window.location.pathname);
+            }, 5000);
+          } else {
+            // Sin estado en URL, verificar si hubo cambio de estado
+            if (huboCambioDeIncompleteAActive) {
+              setSuccess(true);
+              window.history.replaceState({}, document.title, window.location.pathname);
+              setTimeout(() => {
+                navigate('/dashboard');
+              }, 3000);
+            } else {
+              // No hay cambio significativo, solo limpiar URL
+              console.log('Callback detectado pero no se encontró cambio en suscripción. Estado inicial:', estadoInicial, 'Estado nuevo:', suscripcionNueva?.estado);
               window.history.replaceState({}, document.title, window.location.pathname);
             }
           }
@@ -203,7 +229,8 @@ export default function PlanesPage() {
 
       checkSubscriptionStatus();
     }
-  }, [user?.restauranteId, navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.restauranteId, loadingSuscripcion]);
 
   const handlePlanSelect = (planId: PlanType) => {
     if (planId === 'free') {
@@ -270,6 +297,24 @@ export default function PlanesPage() {
       setIsProcessing(false);
     }
   };
+
+  // Limpiar estado de éxito si no hay callback válido (evitar mostrar mensaje por error)
+  useEffect(() => {
+    if (!loading && !loadingSuscripcion) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const wompiCallback = urlParams.get('wompi_callback');
+      const status = urlParams.get('status') || urlParams.get('transaction_status');
+      const reference = urlParams.get('reference');
+      
+      // Si no hay callback válido y hay éxito, limpiarlo (puede ser un estado residual)
+      if (!wompiCallback && !reference && !status && success) {
+        // Solo limpiar si la suscripción ya está activa (no es un pago reciente)
+        if (suscripcionActual && suscripcionActual.estado === 'active') {
+          setSuccess(false);
+        }
+      }
+    }
+  }, [loading, loadingSuscripcion, success, suscripcionActual]);
 
   // Mostrar loading mientras se verifica la autenticación
   if (loading || loadingSuscripcion) {
@@ -522,7 +567,7 @@ export default function PlanesPage() {
                         <ArrowUp className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
                         <span className="truncate">Actualizar a {plan.name}</span>
                       </>
-                    ) : suscripcionActual && (suscripcionActual.estado === 'incomplete' || suscripcionActual.estado === 'pending') ? (
+                    ) : suscripcionActual && suscripcionActual.estado === 'incomplete' ? (
                       plan.id === 'free' ? (
                         'Plan Gratis (Ya tienes)'
                       ) : (
