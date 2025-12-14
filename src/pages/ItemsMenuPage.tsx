@@ -3,6 +3,7 @@ import { useAuth } from '../hooks/useAuth';
 import { itemsMenuService, categoriasService, adicionesService } from '../services';
 import type { ItemMenuConAdiciones, CrearItemMenuDto, ActualizarItemMenuDto, Categoria, Adicion } from '../types/api.types';
 import ImageUpload from '../components/ImageUpload';
+import Swal from 'sweetalert2';
 import {
   Plus,
   Edit2,
@@ -287,15 +288,41 @@ export default function ItemsMenuPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar este item del menú? Esta acción no se puede deshacer.')) return;
+    const result = await Swal.fire({
+      title: '¿Eliminar item del menú?',
+      text: 'Esta acción no se puede deshacer. El item será eliminado permanentemente.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      reverseButtons: true,
+      focusCancel: true,
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       setError(null);
       await itemsMenuService.eliminar(id);
-      setSuccess('Item del menú eliminado exitosamente');
+      await Swal.fire({
+        title: '¡Eliminado!',
+        text: 'El item del menú ha sido eliminado exitosamente.',
+        icon: 'success',
+        timer: 2000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+      });
       loadItems();
     } catch (err: any) {
       setError(err.message || 'Error al eliminar el item del menú');
+      Swal.fire({
+        title: 'Error',
+        text: err.message || 'Hubo un problema al eliminar el item del menú.',
+        icon: 'error',
+        confirmButtonColor: '#dc2626',
+      });
     }
   };
 

@@ -4,6 +4,7 @@ import { useWebSocket } from '../hooks/useWebSocket';
 import { pedidosService, mesasService, itemsMenuService, usuariosService } from '../services';
 import { Link } from 'react-router-dom';
 import type { PedidoCompleto, CrearPedidoDto, EstadoPedido, MesaConMesero, ItemMenuConAdiciones, UsuarioConRol, CrearItemPedidoDto, HistorialEstadoPedido } from '../types/api.types';
+import Swal from 'sweetalert2';
 import {
   Plus,
   Trash2,
@@ -400,18 +401,44 @@ export default function PedidosPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar este pedido? Esta acción no se puede deshacer.')) return;
+    const result = await Swal.fire({
+      title: '¿Eliminar pedido?',
+      text: 'Esta acción no se puede deshacer. El pedido será eliminado permanentemente.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      reverseButtons: true,
+      focusCancel: true,
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       setError(null);
       await pedidosService.eliminar(id);
-      setSuccess('Pedido eliminado exitosamente');
+      await Swal.fire({
+        title: '¡Eliminado!',
+        text: 'El pedido ha sido eliminado exitosamente.',
+        icon: 'success',
+        timer: 2000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+      });
       loadPedidos();
       if (selectedPedido?.id === id) {
         setSelectedPedido(null);
       }
     } catch (err: any) {
       setError(err.message || 'Error al eliminar el pedido');
+      Swal.fire({
+        title: 'Error',
+        text: err.message || 'Hubo un problema al eliminar el pedido.',
+        icon: 'error',
+        confirmButtonColor: '#dc2626',
+      });
     }
   };
 

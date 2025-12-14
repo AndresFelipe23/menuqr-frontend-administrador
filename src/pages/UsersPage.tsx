@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { usuariosService } from '../services';
 import type { UsuarioConRol, CrearUsuarioDto, ActualizarUsuarioDto } from '../types/api.types';
+import Swal from 'sweetalert2';
 import {
   Plus,
   Edit2,
@@ -210,15 +211,41 @@ export default function UsersPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.')) return;
+    const result = await Swal.fire({
+      title: '¿Eliminar usuario?',
+      text: 'Esta acción no se puede deshacer. El usuario será eliminado permanentemente.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      reverseButtons: true,
+      focusCancel: true,
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       setError(null);
       await usuariosService.eliminar(id);
-      setSuccess('Usuario eliminado exitosamente');
+      await Swal.fire({
+        title: '¡Eliminado!',
+        text: 'El usuario ha sido eliminado exitosamente.',
+        icon: 'success',
+        timer: 2000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+      });
       loadUsuarios();
     } catch (err: any) {
       setError(err.message || 'Error al eliminar el usuario');
+      Swal.fire({
+        title: 'Error',
+        text: err.message || 'Hubo un problema al eliminar el usuario.',
+        icon: 'error',
+        confirmButtonColor: '#dc2626',
+      });
     }
   };
 

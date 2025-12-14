@@ -55,7 +55,7 @@ export const routePermissions: RoutePermission[] = [
   },
   {
     path: '/dashboard/mesas',
-    requiredPermissions: [], // Mesas accesible para todos los usuarios autenticados
+    requiredPermissions: ['tables.view', '*'], // Solo usuarios con permiso de ver mesas
     name: 'Mesas',
   },
   {
@@ -65,12 +65,12 @@ export const routePermissions: RoutePermission[] = [
   },
   {
     path: '/dashboard/planes',
-    requiredPermissions: [], // Planes accesible para todos los usuarios autenticados
+    requiredPermissions: ['restaurant.*', '*'], // Solo Administradores y SuperAdministrador (excluye Mesero)
     name: 'Planes',
   },
   {
     path: '/dashboard/comentarios',
-    requiredPermissions: [], // Comentarios accesible para todos los usuarios autenticados
+    requiredPermissions: ['restaurant.*', '*'], // Solo Administradores y SuperAdministrador (excluye Mesero)
     name: 'Solicitudes',
   },
 ];

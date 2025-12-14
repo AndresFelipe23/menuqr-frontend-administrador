@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { adicionesService } from '../services';
 import type { Adicion, CrearAdicionDto, ActualizarAdicionDto } from '../types/api.types';
+import Swal from 'sweetalert2';
 import {
   Plus,
   Edit2,
@@ -147,15 +148,41 @@ export default function AdicionesPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar esta adición? Esta acción no se puede deshacer.')) return;
+    const result = await Swal.fire({
+      title: '¿Eliminar adición?',
+      text: 'Esta acción no se puede deshacer. La adición será eliminada permanentemente.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      reverseButtons: true,
+      focusCancel: true,
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       setError(null);
       await adicionesService.eliminar(id);
-      setSuccess('Adición eliminada exitosamente');
+      await Swal.fire({
+        title: '¡Eliminada!',
+        text: 'La adición ha sido eliminada exitosamente.',
+        icon: 'success',
+        timer: 2000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+      });
       loadAdiciones();
     } catch (err: any) {
       setError(err.message || 'Error al eliminar la adición');
+      Swal.fire({
+        title: 'Error',
+        text: err.message || 'Hubo un problema al eliminar la adición.',
+        icon: 'error',
+        confirmButtonColor: '#dc2626',
+      });
     }
   };
 

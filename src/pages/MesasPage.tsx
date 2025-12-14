@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { usePermissions } from '../hooks/usePermissions';
 import { mesasService, usuariosService } from '../services';
 import type { MesaConMesero, CrearMesaDto, ActualizarMesaDto, UsuarioConRol } from '../types/api.types';
+import Swal from 'sweetalert2';
 import {
   Plus,
   Edit2,
@@ -32,6 +34,8 @@ interface Rol {
 
 export default function MesasPage() {
   const { user } = useAuth();
+  const { hasRole } = usePermissions();
+  const esMesero = hasRole('Mesero');
   const [mesas, setMesas] = useState<MesaConMesero[]>([]);
   const [meseros, setMeseros] = useState<UsuarioConRol[]>([]);
   const [roles, setRoles] = useState<Rol[]>([]);
@@ -260,15 +264,41 @@ export default function MesasPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar esta mesa? Esta acción no se puede deshacer.')) return;
+    const result = await Swal.fire({
+      title: '¿Eliminar mesa?',
+      text: 'Esta acción no se puede deshacer. La mesa será eliminada permanentemente.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      reverseButtons: true,
+      focusCancel: true,
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       setError(null);
       await mesasService.eliminar(id);
-      setSuccess('Mesa eliminada exitosamente');
+      await Swal.fire({
+        title: '¡Eliminada!',
+        text: 'La mesa ha sido eliminada exitosamente.',
+        icon: 'success',
+        timer: 2000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+      });
       loadMesas();
     } catch (err: any) {
       setError(err.message || 'Error al eliminar la mesa');
+      Swal.fire({
+        title: 'Error',
+        text: err.message || 'Hubo un problema al eliminar la mesa.',
+        icon: 'error',
+        confirmButtonColor: '#dc2626',
+      });
     }
   };
 
@@ -492,7 +522,7 @@ export default function MesasPage() {
       )}
 
       {/* Formulario */}
-      {showForm && (
+      {showForm && !esMesero && (
         <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
           <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
             {editingMesa ? 'Editar Mesa' : 'Nueva Mesa'}
@@ -801,19 +831,21 @@ export default function MesasPage() {
           <Table className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-4 text-sm font-medium text-gray-900">No hay mesas</h3>
           <p className="mt-2 text-sm text-gray-500">Comienza agregando tu primera mesa.</p>
-          <div className="mt-6">
-            <button
-              onClick={() => {
-                setShowForm(true);
-                setEditingMesa(null);
-                resetForm();
-              }}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
-            >
-              <Plus className="h-5 w-5 mr-2" />
-              Nueva Mesa
-            </button>
-          </div>
+          {!esMesero && (
+            <div className="mt-6">
+              <button
+                onClick={() => {
+                  setShowForm(true);
+                  setEditingMesa(null);
+                  resetForm();
+                }}
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+              >
+                <Plus className="h-5 w-5 mr-2" />
+                Nueva Mesa
+              </button>
+            </div>
+          )}
         </div>
       ) : (
         <div>
@@ -932,55 +964,64 @@ export default function MesasPage() {
 
                   {/* Acciones */}
                   <div className="flex items-center justify-center sm:justify-end space-x-1 pt-3 border-t border-gray-100">
-                    <button
-                      onClick={() => handleToggleOcupada(mesa)}
-                      className={`p-1.5 transition-colors ${
-                        mesa.ocupada
-                          ? 'text-red-600 hover:text-red-700'
-                          : 'text-green-600 hover:text-green-700'
-                      }`}
-                      title={mesa.ocupada ? 'Marcar como disponible' : 'Marcar como ocupada'}
-                    >
-                      {mesa.ocupada ? (
-                        <XCircle className="h-4 w-4" />
-                      ) : (
-                        <CheckCircle className="h-4 w-4" />
-                      )}
-                    </button>
-                    {mesa.imagenQrUrl && (
-                      <button
-                        onClick={() => handleRegenerarQR(mesa)}
-                        className="p-1.5 text-blue-400 hover:text-blue-600 transition-colors"
-                        title="Regenerar QR"
-                      >
-                        <RotateCw className="h-4 w-4" />
-                      </button>
+                    {!esMesero && (
+                      <>
+                        <button
+                          onClick={() => handleToggleOcupada(mesa)}
+                          className={`p-1.5 transition-colors ${
+                            mesa.ocupada
+                              ? 'text-red-600 hover:text-red-700'
+                              : 'text-green-600 hover:text-green-700'
+                          }`}
+                          title={mesa.ocupada ? 'Marcar como disponible' : 'Marcar como ocupada'}
+                        >
+                          {mesa.ocupada ? (
+                            <XCircle className="h-4 w-4" />
+                          ) : (
+                            <CheckCircle className="h-4 w-4" />
+                          )}
+                        </button>
+                        {mesa.imagenQrUrl && (
+                          <button
+                            onClick={() => handleRegenerarQR(mesa)}
+                            className="p-1.5 text-blue-400 hover:text-blue-600 transition-colors"
+                            title="Regenerar QR"
+                          >
+                            <RotateCw className="h-4 w-4" />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleToggleActiva(mesa)}
+                          className={`p-1.5 transition-colors ${
+                            mesa.activa
+                              ? 'text-green-600 hover:text-green-700'
+                              : 'text-gray-400 hover:text-gray-600'
+                          }`}
+                          title={mesa.activa ? 'Desactivar' : 'Activar'}
+                        >
+                          {mesa.activa ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                        </button>
+                        <button
+                          onClick={() => handleEdit(mesa)}
+                          className="p-1.5 text-gray-400 hover:text-green-600 transition-colors"
+                          title="Editar"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(mesa.id)}
+                          className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
+                          title="Eliminar"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </>
                     )}
-                    <button
-                      onClick={() => handleToggleActiva(mesa)}
-                      className={`p-1.5 transition-colors ${
-                        mesa.activa
-                          ? 'text-green-600 hover:text-green-700'
-                          : 'text-gray-400 hover:text-gray-600'
-                      }`}
-                      title={mesa.activa ? 'Desactivar' : 'Activar'}
-                    >
-                      {mesa.activa ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-                    </button>
-                    <button
-                      onClick={() => handleEdit(mesa)}
-                      className="p-1.5 text-gray-400 hover:text-green-600 transition-colors"
-                      title="Editar"
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(mesa.id)}
-                      className="p-1.5 text-gray-400 hover:text-red-600 transition-colors"
-                      title="Eliminar"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                    {esMesero && (
+                      <div className="text-xs text-gray-500 italic px-2">
+                        Solo lectura
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

@@ -3,6 +3,7 @@ import { useAuth } from '../hooks/useAuth';
 import { categoriasService } from '../services';
 import { itemsMenuService } from '../services/items-menu.service';
 import type { Categoria, CrearCategoriaDto, ActualizarCategoriaDto } from '../types/api.types';
+import Swal from 'sweetalert2';
 import {
   Plus,
   Edit2,
@@ -164,15 +165,41 @@ export default function CategoriasPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar esta categoría? Esta acción no se puede deshacer.')) return;
+    const result = await Swal.fire({
+      title: '¿Eliminar categoría?',
+      text: 'Esta acción no se puede deshacer. La categoría será eliminada permanentemente.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      reverseButtons: true,
+      focusCancel: true,
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       setError(null);
       await categoriasService.eliminar(id);
-      setSuccess('Categoría eliminada exitosamente');
+      await Swal.fire({
+        title: '¡Eliminada!',
+        text: 'La categoría ha sido eliminada exitosamente.',
+        icon: 'success',
+        timer: 2000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+      });
       loadCategorias();
     } catch (err: any) {
       setError(err.message || 'Error al eliminar la categoría');
+      Swal.fire({
+        title: 'Error',
+        text: err.message || 'Hubo un problema al eliminar la categoría.',
+        icon: 'error',
+        confirmButtonColor: '#dc2626',
+      });
     }
   };
 

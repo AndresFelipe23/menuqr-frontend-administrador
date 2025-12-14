@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { enlacesService } from '../services';
 import type { EnlaceRestaurante, CrearEnlaceDto, ActualizarEnlaceDto } from '../types/api.types';
+import Swal from 'sweetalert2';
 import {
   Plus,
   Edit2,
@@ -199,15 +200,41 @@ export default function EnlacesPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar este enlace?')) return;
+    const result = await Swal.fire({
+      title: '¿Eliminar enlace?',
+      text: 'Esta acción no se puede deshacer. El enlace será eliminado permanentemente.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      reverseButtons: true,
+      focusCancel: true,
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       setError(null);
       await enlacesService.eliminar(id);
-      setSuccess('Enlace eliminado exitosamente');
+      await Swal.fire({
+        title: '¡Eliminado!',
+        text: 'El enlace ha sido eliminado exitosamente.',
+        icon: 'success',
+        timer: 2000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+      });
       loadEnlaces();
     } catch (err: any) {
       setError(err.message || 'Error al eliminar el enlace');
+      Swal.fire({
+        title: 'Error',
+        text: err.message || 'Hubo un problema al eliminar el enlace.',
+        icon: 'error',
+        confirmButtonColor: '#dc2626',
+      });
     }
   };
 

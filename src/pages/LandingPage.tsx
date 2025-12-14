@@ -62,14 +62,15 @@ export default function LandingPage() {
         'Hasta 5 mesas',
         '1 usuario (solo administrador)',
         'QR automático por mesa',
+        'Gestión básica de pedidos',
         'Soporte por email',
         'Sin marca de agua',
       ],
       limitations: [
         'Sin WebSockets (actualizaciones manuales)',
-        'Sin analytics',
         'Sin enlaces sociales',
-        'Sin roles adicionales',
+        'Sin roles adicionales (Mesero, Cocina)',
+        'Sin historial detallado de cambios',
       ],
       cta: 'Comenzar Gratis',
       popular: false,
@@ -87,11 +88,12 @@ export default function LandingPage() {
         'Adiciones y opciones ilimitadas',
         'Mesas ilimitadas',
         'Usuarios ilimitados',
-        'WebSockets (tiempo real)',
+        'Sistema de roles (Admin, Mesero, Cocina)',
+        'WebSockets (actualizaciones en tiempo real)',
+        'Gestión completa de pedidos',
         'Historial completo de cambios',
-        'Múltiples vistas de pedidos',
-        'Personalización completa',
         'Enlaces sociales (Linktr.ee)',
+        'Personalización completa del restaurante',
         'Soporte prioritario',
         'Sin marca de agua',
       ],
@@ -108,18 +110,14 @@ export default function LandingPage() {
       description: 'Funcionalidades avanzadas',
       features: [
         'Todo lo de PRO',
-        'Analytics y reportes avanzados',
-        'Reservas de mesas',
-        'Promociones y descuentos',
-        'Reseñas y calificaciones',
-        'Gestión de stock/inventario',
-        'Integración con delivery',
-        'API personalizada',
-        'Soporte 24/7',
+        'Soporte prioritario extendido',
+        'Acceso anticipado a nuevas funcionalidades',
+        'Asesoría personalizada',
       ],
       limitations: [],
       cta: 'Comenzar Ahora',
       popular: false,
+      note: 'Próximamente: Analytics avanzado, Reservas de mesas, Promociones y descuentos, Sistema de reseñas',
     },
   ];
 
@@ -600,6 +598,11 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
+                {(plan as any).note && (
+                  <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-xs text-blue-700 italic">{(plan as any).note}</p>
+                  </div>
+                )}
                 <Link
                   to="/register"
                   className={`group block w-full text-center py-4 rounded-xl font-bold transition-all shadow-lg hover:shadow-xl transform hover:scale-105 ${
