@@ -505,7 +505,7 @@ export default function PlanesPage() {
                       ) : (
                         <>
                           <span className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
-                            {plan.id === 'pro' ? '$36,000' : '$56,000'}
+                            {plan.id === 'pro' ? '$20,000' : '$35,000'}
                           </span>
                           <span className="text-gray-600 text-base sm:text-lg">/mes</span>
                           <span className="text-xs sm:text-sm text-gray-500 ml-1">COP</span>
@@ -583,8 +583,8 @@ export default function PlanesPage() {
                 <p className="text-sm sm:text-base text-green-50">
                   Plan Mensual -{' '}
                   {selectedPlan === 'pro'
-                    ? '$36,000/mes COP'
-                    : '$56,000/mes COP'}
+                    ? '$20,000/mes COP'
+                    : '$35,000/mes COP'}
                 </p>
               </div>
 
