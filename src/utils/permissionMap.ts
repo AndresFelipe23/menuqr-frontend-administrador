@@ -68,6 +68,11 @@ export const routePermissions: RoutePermission[] = [
     requiredPermissions: [], // Planes accesible para todos los usuarios autenticados
     name: 'Planes',
   },
+  {
+    path: '/dashboard/comentarios',
+    requiredPermissions: [], // Comentarios accesible para todos los usuarios autenticados
+    name: 'Solicitudes',
+  },
 ];
 
 /**

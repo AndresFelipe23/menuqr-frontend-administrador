@@ -13,7 +13,7 @@ const getWebSocketURL = (): string => {
     const url = new URL(apiUrl);
     // Remover el path y mantener solo el origen (protocolo + host + puerto)
     const baseUrl = `${url.protocol}//${url.host}`;
-    console.log('🔌 URL WebSocket calculada:', baseUrl, '(desde:', apiUrl, ')');
+    
     return baseUrl;
   } catch (error) {
     // Si falla el parsing, intentar extraer manualmente

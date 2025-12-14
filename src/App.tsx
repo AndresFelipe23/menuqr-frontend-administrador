@@ -17,6 +17,7 @@ import PedidosPage from './pages/PedidosPage';
 import TablesPage from './pages/TablesPage';
 import SettingsPage from './pages/SettingsPage';
 import PlanesPage from './pages/PlanesPage';
+import ComentariosPage from './pages/ComentariosPage';
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
             <Route path="/dashboard/tables" element={<TablesPage />} />
             <Route path="/dashboard/settings" element={<SettingsPage />} />
             <Route path="/dashboard/planes" element={<PlanesPage />} />
+            <Route path="/dashboard/comentarios" element={<ComentariosPage />} />
           </Route>
         </Route>
 

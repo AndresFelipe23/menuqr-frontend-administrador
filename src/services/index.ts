@@ -12,5 +12,6 @@ export { adicionesService } from './adiciones.service';
 export { pedidosService } from './pedidos.service';
 export { storageService } from './storage.service';
 export { suscripcionesService } from './suscripciones.service';
+export { comentariosService } from './comentarios.service';
 export type { LoginDto, RegisterDto, RefreshTokenDto } from './auth.service';
 

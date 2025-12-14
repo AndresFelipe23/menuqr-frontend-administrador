@@ -9,36 +9,13 @@ import {
   ArrowRight,
   LogIn,
   UserPlus,
-  MapPin,
-  ExternalLink,
   X
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { restaurantsService } from '../services';
-import type { Restaurante } from '../types/api.types';
+import { useState } from 'react';
 
 export default function LandingPage() {
-  const [restaurantes, setRestaurantes] = useState<Restaurante[]>([]);
-  const [, setLoadingRestaurantes] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    const cargarRestaurantes = async () => {
-      try {
-        const data = await restaurantsService.obtenerTodosPublicos();
-        // Limitar a 6 restaurantes para mostrar en el landing
-        setRestaurantes(data.slice(0, 6));
-      } catch (error) {
-        console.error('Error al cargar restaurantes:', error);
-        setRestaurantes([]);
-      } finally {
-        setLoadingRestaurantes(false);
-      }
-    };
-
-    cargarRestaurantes();
-  }, []);
 
   const features = [
     {
@@ -99,10 +76,10 @@ export default function LandingPage() {
     },
     {
       name: 'PRO',
-      price: '$9',
+      price: '$20,000',
       period: '/mes',
-      priceAnnual: '$90',
-      periodAnnual: '/año',
+      priceAnnual: '',
+      periodAnnual: '',
       description: 'Para restaurantes establecidos',
       features: [
         'Items ilimitados en el menú',
@@ -124,10 +101,10 @@ export default function LandingPage() {
     },
     {
       name: 'PREMIUM',
-      price: '$14',
+      price: '$35,000',
       period: '/mes',
-      priceAnnual: '$140',
-      periodAnnual: '/año',
+      priceAnnual: '',
+      periodAnnual: '',
       description: 'Funcionalidades avanzadas',
       features: [
         'Todo lo de PRO',
@@ -525,100 +502,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Restaurantes Section */}
-      {restaurantes.length > 0 && (
-        <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-3">
-                Empresas que{' '}
-                <span className="text-green-600">confían en nosotros</span>
-              </h2>
-              <p className="text-gray-600">
-                Únete a restaurantes que ya están modernizando su servicio con MenuQR
-              </p>
-            </div>
-            
-            {/* Carrusel horizontal */}
-            <div className="relative">
-              <div className="overflow-x-auto scrollbar-hide pb-4">
-                <div className="flex gap-4" style={{ width: 'max-content' }}>
-                  {restaurantes.map((restaurante) => {
-                    const clienteUrl = import.meta.env.VITE_CLIENTE_URL || 'http://localhost:4321';
-                    const restauranteUrl = `${clienteUrl}/${restaurante.slug}`;
-                    
-                    return (
-                      <a
-                        key={restaurante.id}
-                        href={restauranteUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="group flex-shrink-0 w-80 px-6 py-5 bg-white border border-gray-200 rounded-lg hover:border-green-300 hover:shadow-md transition-all duration-200"
-                      >
-                        <div className="flex flex-col h-full">
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-2 flex-wrap">
-                                <h3 className="text-lg font-semibold text-gray-900 group-hover:text-green-600 transition-colors truncate">
-                                  {restaurante.nombre}
-                                </h3>
-                                {restaurante.mostrarMenu && (
-                                  <span className="px-2 py-0.5 bg-green-50 text-green-700 rounded text-xs font-medium flex-shrink-0">
-                                    Menú
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                            <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-green-600 transition-colors flex-shrink-0 ml-2" />
-                          </div>
-                          
-                          {restaurante.biografia && (
-                            <p className="text-gray-600 text-sm mb-3 line-clamp-3 flex-1">
-                              {restaurante.biografia}
-                            </p>
-                          )}
-                          
-                          <div className="flex items-center gap-4 text-xs text-gray-500 mt-auto">
-                            {restaurante.ciudad && (
-                              <div className="flex items-center">
-                                <MapPin className="h-3.5 w-3.5 mr-1 flex-shrink-0" />
-                                <span className="truncate">{restaurante.ciudad}</span>
-                              </div>
-                            )}
-                            {restaurante.pais && restaurante.ciudad !== restaurante.pais && (
-                              <span className="truncate">{restaurante.pais}</span>
-                            )}
-                          </div>
-                        </div>
-                      </a>
-                    );
-                  })}
-                </div>
-              </div>
-              
-              {/* Indicador de scroll */}
-              <div className="flex items-center justify-center mt-6 text-xs text-gray-400">
-                <span>Desliza para ver más →</span>
-              </div>
-            </div>
-
-            {restaurantes.length >= 6 && (
-              <div className="text-center mt-8">
-                <a
-                  href={import.meta.env.VITE_CLIENTE_URL || 'http://localhost:4321'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center space-x-2 text-sm text-green-600 hover:text-green-700 font-medium"
-                >
-                  <span>Ver todos los restaurantes</span>
-                  <ArrowRight className="h-4 w-4" />
-                </a>
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
       {/* Features Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
@@ -698,15 +581,10 @@ export default function LandingPage() {
                       {plan.price}
                     </span>
                     <span className="text-gray-600">{plan.period}</span>
-                    <span className="text-sm text-gray-500 ml-1">USD</span>
+                    <span className="text-sm text-gray-500 ml-1">
+                      {plan.name === 'FREE' ? 'USD' : 'COP'}
+                    </span>
                   </div>
-                  {plan.priceAnnual && (
-                    <div className="text-sm text-gray-500 mb-2">
-                      o {plan.priceAnnual}
-                      {plan.periodAnnual}
-                      <span className="text-gray-500 ml-1">USD</span>
-                    </div>
-                  )}
                 </div>
                 <ul className="space-y-3 mb-8">
                   {plan.features.map((feature, featureIndex) => (

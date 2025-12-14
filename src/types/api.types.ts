@@ -671,3 +671,62 @@ export interface LimitesPlan {
   marcaAgua: boolean;
 }
 
+// Tipos de comentarios
+export type TipoComentario = 'comentario' | 'queja' | 'solicitud' | 'sugerencia' | 'pregunta';
+export type EstadoComentario = 'pendiente' | 'en_proceso' | 'resuelto' | 'cerrado';
+export type PrioridadComentario = 'baja' | 'normal' | 'alta' | 'urgente';
+
+export interface Comentario {
+  id: string;
+  restauranteId: string | null;
+  usuarioId: string | null;
+  tipo: TipoComentario;
+  asunto: string;
+  mensaje: string;
+  estado: EstadoComentario;
+  respuesta: string | null;
+  usuarioRespuestaId: string | null;
+  prioridad: PrioridadComentario;
+  fechaCreacion: string;
+  fechaActualizacion: string;
+  fechaRespuesta: string | null;
+  fechaEliminacion: string | null;
+  nombreUsuario?: string;
+  correoUsuario?: string;
+  nombreRestaurante?: string;
+  nombreUsuarioRespuesta?: string;
+}
+
+// Alias para compatibilidad
+export type ComentarioConUsuario = Comentario;
+
+export interface CrearComentarioDto {
+  restauranteId?: string;
+  usuarioId?: string;
+  tipo: TipoComentario;
+  asunto: string;
+  mensaje: string;
+  prioridad?: PrioridadComentario;
+}
+
+export interface ActualizarComentarioDto {
+  tipo?: TipoComentario;
+  asunto?: string;
+  mensaje?: string;
+  estado?: EstadoComentario;
+  respuesta?: string;
+  prioridad?: PrioridadComentario;
+}
+
+export interface QueryComentarioDto {
+  page?: number;
+  limit?: number;
+  restauranteId?: string;
+  usuarioId?: string;
+  tipo?: TipoComentario;
+  estado?: EstadoComentario;
+  prioridad?: PrioridadComentario;
+  asunto?: string;
+  orden?: 'asc' | 'desc';
+}
+

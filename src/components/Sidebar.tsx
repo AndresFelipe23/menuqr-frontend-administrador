@@ -20,6 +20,7 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
+  MessageSquare,
 } from 'lucide-react';
 import { authService } from '../services/auth.service';
 import { useNavigate } from 'react-router-dom';
@@ -85,6 +86,11 @@ const navigation: NavItem[] = [
     name: 'Planes',
     path: '/dashboard/planes',
     icon: CreditCard,
+  },
+  {
+    name: 'Solicitudes',
+    path: '/dashboard/comentarios',
+    icon: MessageSquare,
   },
 ];
 
