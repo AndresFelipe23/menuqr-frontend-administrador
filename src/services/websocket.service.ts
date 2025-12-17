@@ -66,7 +66,7 @@ class WebSocketService {
     });
 
     this.socket.on('disconnect', (reason) => {
-      
+      console.log('🔌 Desconectado de WebSocket:', reason);
     });
 
     this.socket.on('connect_error', (error) => {
