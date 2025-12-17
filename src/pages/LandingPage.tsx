@@ -110,6 +110,12 @@ export default function LandingPage() {
       description: 'Funcionalidades avanzadas',
       features: [
         'Todo lo de PRO',
+        'Sistema de reservas de mesas completo',
+        'Gestión de horarios y políticas de reservas',
+        'Calendario de reservas interactivo',
+        'Confirmación automática de reservas',
+        'Notificaciones push para clientes',
+        'Historial completo de reservas',
         'Soporte prioritario extendido',
         'Acceso anticipado a nuevas funcionalidades',
         'Asesoría personalizada',
@@ -117,7 +123,7 @@ export default function LandingPage() {
       limitations: [],
       cta: 'Comenzar Ahora',
       popular: false,
-      note: 'Próximamente: Analytics avanzado, Reservas de mesas, Promociones y descuentos, Sistema de reseñas',
+      note: 'Próximamente: Analytics avanzado, Promociones y descuentos, Sistema de reseñas, Gestión de stock',
     },
   ];
 
