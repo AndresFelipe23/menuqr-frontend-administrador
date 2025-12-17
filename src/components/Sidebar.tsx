@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { usePermissions } from '../hooks/usePermissions';
 import { isRouteAllowed } from '../utils/permissionMap';
@@ -21,14 +21,16 @@ import {
   ChevronRight,
   LogOut,
   MessageSquare,
+  Calendar,
 } from 'lucide-react';
 import { authService } from '../services/auth.service';
-import { useNavigate } from 'react-router-dom';
+import { suscripcionesService } from '../services';
 
 interface NavItem {
   name: string;
   path: string;
   icon: React.ComponentType<{ className?: string }>;
+  premium?: boolean; // Indica si es solo para plan PREMIUM
 }
 
 const navigation: NavItem[] = [
@@ -78,6 +80,12 @@ const navigation: NavItem[] = [
     icon: Table,
   },
   {
+    name: 'Reservas',
+    path: '/dashboard/reservas',
+    icon: Calendar,
+    premium: true, // Solo para plan PREMIUM
+  },
+  {
     name: 'Configuración',
     path: '/dashboard/settings',
     icon: Settings,
@@ -104,11 +112,42 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const { hasPermission } = usePermissions();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [esPremium, setEsPremium] = useState(false);
 
-  // Filtrar navegación según permisos del usuario
-  const filteredNavigation = navigation.filter(item => 
-    isRouteAllowed(item.path, hasPermission)
-  );
+  // Verificar plan PREMIUM
+  useEffect(() => {
+    async function verificarPlan() {
+      if (!user?.restauranteId) {
+        return;
+      }
+
+      try {
+        const suscripcion = await suscripcionesService.obtenerPorRestauranteId(user.restauranteId);
+        const esPlanPremium = suscripcion?.tipoPlan === 'premium' && suscripcion?.estado === 'active';
+        setEsPremium(esPlanPremium);
+      } catch (err) {
+        console.error('Error al verificar plan:', err);
+        setEsPremium(false);
+      }
+    }
+
+    verificarPlan();
+  }, [user?.restauranteId]);
+
+  // Filtrar navegación según permisos del usuario y plan PREMIUM
+  const filteredNavigation = navigation.filter(item => {
+    // Verificar permisos
+    if (!isRouteAllowed(item.path, hasPermission)) {
+      return false;
+    }
+    
+    // Si el item requiere PREMIUM, verificar que el usuario tenga plan PREMIUM
+    if (item.premium && !esPremium) {
+      return false;
+    }
+    
+    return true;
+  });
 
   const handleLogout = async () => {
     try {
