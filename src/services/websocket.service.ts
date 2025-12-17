@@ -47,7 +47,7 @@ class WebSocketService {
       return;
     }
 
-    console.log('🔌 Conectando a WebSocket:', WS_URL);
+    
 
     this.socket = io(WS_URL, {
       auth: {
@@ -61,12 +61,12 @@ class WebSocketService {
     });
 
     this.socket.on('connect', () => {
-      console.log('✅ WebSocket conectado, Socket ID:', this.socket?.id);
+    
       this.reconnectAttempts = 0;
     });
 
     this.socket.on('disconnect', (reason) => {
-      console.log('❌ WebSocket desconectado:', reason);
+      
     });
 
     this.socket.on('connect_error', (error) => {
