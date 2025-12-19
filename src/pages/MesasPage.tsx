@@ -66,7 +66,7 @@ export default function MesasPage() {
       loadMesas();
       loadRoles();
     }
-  }, [user?.restauranteId]);
+  }, [user?.restauranteId, esMesero, user?.id]);
 
   useEffect(() => {
     if (user?.restauranteId && roles.length > 0) {
@@ -81,8 +81,13 @@ export default function MesasPage() {
       setLoading(true);
       setError(null);
       const data = await mesasService.obtenerPorRestauranteId(user.restauranteId);
+      // Si es mesero, filtrar solo las mesas asignadas a él
+      let mesasFiltradas = data;
+      if (esMesero && user?.id) {
+        mesasFiltradas = data.filter(mesa => mesa.meseroAsignadoId === user.id);
+      }
       // Ordenar por número
-      const sorted = data.sort((a, b) => a.numero.localeCompare(b.numero));
+      const sorted = mesasFiltradas.sort((a, b) => a.numero.localeCompare(b.numero));
       setMesas(sorted);
     } catch (err: any) {
       setError(err.message || 'Error al cargar las mesas');
@@ -409,7 +414,7 @@ export default function MesasPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex flex-wrap items-center gap-2 sm:gap-3">
-                  <span>Mesas del Restaurante</span>
+                  <span>{esMesero ? 'Mis Mesas Asignadas' : 'Mesas del Restaurante'}</span>
                   {mesas.length > 0 && !loading && (
                     <span className="px-2 sm:px-3 py-1 text-xs sm:text-sm font-semibold bg-green-100 text-green-700 rounded-full whitespace-nowrap">
                       {mesas.length}
@@ -417,7 +422,10 @@ export default function MesasPage() {
                   )}
                 </h1>
                 <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-600">
-                  Gestiona las mesas y códigos QR de tu restaurante
+                  {esMesero 
+                    ? 'Visualiza y gestiona el estado de tus mesas asignadas'
+                    : 'Gestiona las mesas y códigos QR de tu restaurante'
+                  }
                 </p>
               </div>
             </div>
@@ -440,14 +448,16 @@ export default function MesasPage() {
 
       {/* Estadísticas */}
       {mesas.length > 0 && !loading && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+        <div className={`grid grid-cols-2 ${esMesero ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} gap-3 sm:gap-4 mb-6`}>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
             <div className="flex items-center">
               <div className="flex-shrink-0 p-2 bg-blue-100 rounded-lg">
                 <Table className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
               </div>
               <div className="ml-2 sm:ml-4 min-w-0">
-                <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">Total Mesas</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">
+                  {esMesero ? 'Mis Mesas' : 'Total Mesas'}
+                </p>
                 <p className="text-xl sm:text-2xl font-semibold text-gray-900">{mesas.length}</p>
               </div>
             </div>
@@ -474,17 +484,19 @@ export default function MesasPage() {
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 p-2 bg-purple-100 rounded-lg">
-                <Users className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
-              </div>
-              <div className="ml-2 sm:ml-4 min-w-0">
-                <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">Capacidad Total</p>
-                <p className="text-xl sm:text-2xl font-semibold text-gray-900">{getCapacidadTotal()}</p>
+          {!esMesero && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
+              <div className="flex items-center">
+                <div className="flex-shrink-0 p-2 bg-purple-100 rounded-lg">
+                  <Users className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
+                </div>
+                <div className="ml-2 sm:ml-4 min-w-0">
+                  <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">Capacidad Total</p>
+                  <p className="text-xl sm:text-2xl font-semibold text-gray-900">{getCapacidadTotal()}</p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 
@@ -829,8 +841,15 @@ export default function MesasPage() {
       ) : mesas.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
           <Table className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-4 text-sm font-medium text-gray-900">No hay mesas</h3>
-          <p className="mt-2 text-sm text-gray-500">Comienza agregando tu primera mesa.</p>
+          <h3 className="mt-4 text-sm font-medium text-gray-900">
+            {esMesero ? 'No tienes mesas asignadas' : 'No hay mesas'}
+          </h3>
+          <p className="mt-2 text-sm text-gray-500">
+            {esMesero 
+              ? 'Contacta al administrador para que te asigne mesas.'
+              : 'Comienza agregando tu primera mesa.'
+            }
+          </p>
           {!esMesero && (
             <div className="mt-6">
               <button
@@ -964,23 +983,25 @@ export default function MesasPage() {
 
                   {/* Acciones */}
                   <div className="flex items-center justify-center sm:justify-end space-x-1 pt-3 border-t border-gray-100">
+                    {/* Botón para cambiar estado ocupada/disponible - Disponible para todos */}
+                    <button
+                      onClick={() => handleToggleOcupada(mesa)}
+                      className={`p-1.5 transition-colors ${
+                        mesa.ocupada
+                          ? 'text-red-600 hover:text-red-700'
+                          : 'text-green-600 hover:text-green-700'
+                      }`}
+                      title={mesa.ocupada ? 'Marcar como disponible' : 'Marcar como ocupada'}
+                    >
+                      {mesa.ocupada ? (
+                        <XCircle className="h-4 w-4" />
+                      ) : (
+                        <CheckCircle className="h-4 w-4" />
+                      )}
+                    </button>
+                    {/* Acciones solo para administradores */}
                     {!esMesero && (
                       <>
-                        <button
-                          onClick={() => handleToggleOcupada(mesa)}
-                          className={`p-1.5 transition-colors ${
-                            mesa.ocupada
-                              ? 'text-red-600 hover:text-red-700'
-                              : 'text-green-600 hover:text-green-700'
-                          }`}
-                          title={mesa.ocupada ? 'Marcar como disponible' : 'Marcar como ocupada'}
-                        >
-                          {mesa.ocupada ? (
-                            <XCircle className="h-4 w-4" />
-                          ) : (
-                            <CheckCircle className="h-4 w-4" />
-                          )}
-                        </button>
                         {mesa.imagenQrUrl && (
                           <button
                             onClick={() => handleRegenerarQR(mesa)}
@@ -1016,11 +1037,6 @@ export default function MesasPage() {
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </>
-                    )}
-                    {esMesero && (
-                      <div className="text-xs text-gray-500 italic px-2">
-                        Solo lectura
-                      </div>
                     )}
                   </div>
                 </div>
