@@ -545,11 +545,16 @@ export default function UsersPage() {
                   disabled={loadingRoles}
                 >
                   <option value="">Sin rol asignado</option>
-                  {roles.map((rol) => (
-                    <option key={rol.id} value={rol.id}>
-                      {rol.nombre}
-                    </option>
-                  ))}
+                  {roles
+                    .filter((rol) => {
+                      const nombreRol = rol.nombre?.toLowerCase() || '';
+                      return nombreRol !== 'superadministrador' && nombreRol !== 'super administrador';
+                    })
+                    .map((rol) => (
+                      <option key={rol.id} value={rol.id}>
+                        {rol.nombre}
+                      </option>
+                    ))}
                 </select>
               </div>
 

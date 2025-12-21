@@ -11,7 +11,6 @@ import {
   Mail,
   Phone,
   Building,
-  Shield,
   Save,
   Loader2,
   AlertCircle,
@@ -231,7 +230,6 @@ export default function SettingsPage() {
     { id: 'perfil', name: 'Perfil', icon: User },
     { id: 'seguridad', name: 'Seguridad', icon: Lock },
     { id: 'restaurante', name: 'Restaurante', icon: Building },
-    { id: 'permisos', name: 'Permisos', icon: Shield },
   ];
 
   if (loading) {
@@ -640,69 +638,6 @@ export default function SettingsPage() {
               </div>
             )}
 
-            {/* Sección: Permisos */}
-            {activeSection === 'permisos' && (
-              <div>
-                <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center flex-shrink-0">
-                    <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
-                  </div>
-                  <h2 className="text-lg sm:text-xl font-bold text-gray-900">Permisos y Roles</h2>
-                </div>
-
-                <div className="space-y-4 sm:space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Rol Actual</label>
-                    <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg border border-purple-200">
-                      <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 flex-shrink-0" />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-purple-900 truncate">{user?.rolNombre || 'Sin rol'}</p>
-                        <p className="text-xs text-purple-700">Tu rol en el sistema</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {user?.permisos && user.permisos.length > 0 ? (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-3">Permisos</label>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {user.permisos.map((permiso, index) => (
-                          <div
-                            key={index}
-                            className="p-3 bg-gray-50 rounded-lg border border-gray-200"
-                          >
-                            <p className="text-sm font-medium text-gray-900">{permiso.nombre}</p>
-                            {permiso.modulo && (
-                              <span className="inline-block mt-2 px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded">
-                                {permiso.modulo}
-                              </span>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 bg-gray-50 rounded-lg border border-gray-200">
-                      <Shield className="mx-auto h-8 w-8 text-gray-400" />
-                      <p className="mt-2 text-sm text-gray-500">No tienes permisos asignados</p>
-                    </div>
-                  )}
-
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <div className="flex items-start">
-                      <Info className="h-5 w-5 text-blue-600 mr-3 mt-0.5 flex-shrink-0" />
-                      <div className="text-sm text-blue-700">
-                        <p className="font-medium mb-1">Sobre los permisos:</p>
-                        <p className="text-xs">
-                          Los permisos son gestionados por los administradores del restaurante. 
-                          Si necesitas permisos adicionales, contacta con un administrador.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
