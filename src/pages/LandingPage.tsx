@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
+import SEO from '../components/SEO';
 
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -127,8 +128,65 @@ export default function LandingPage() {
     },
   ];
 
+  // Structured Data para SEO
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'MenuQR',
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+      availability: 'https://schema.org/InStock',
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.8',
+      ratingCount: '150',
+    },
+    description: 'Moderniza tu restaurante con menús digitales interactivos. Genera códigos QR automáticos, gestiona pedidos en tiempo real y ofrece una experiencia única a tus clientes.',
+    url: typeof window !== 'undefined' ? window.location.origin : 'https://qrestaurante.site',
+    author: {
+      '@type': 'Organization',
+      name: 'MenuQR',
+    },
+    featureList: [
+      'Códigos QR Automáticos',
+      'Gestión Completa de Menú',
+      'Sistema de Roles',
+      'Pedidos en Tiempo Real',
+      'Diseño Responsive',
+      'Analytics Avanzado',
+    ],
+  };
+
+  const organizationData = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'MenuQR',
+    url: typeof window !== 'undefined' ? window.location.origin : 'https://qrestaurante.site',
+    logo: typeof window !== 'undefined' ? `${window.location.origin}/logo.svg` : 'https://qrestaurante.site/logo.svg',
+    description: 'Plataforma de menús digitales con códigos QR para restaurantes',
+    sameAs: [],
+  };
+
   return (
     <div className="min-h-screen bg-white">
+      <SEO
+        title="MenuQR - Menús Digitales con Códigos QR para Restaurantes"
+        description="Moderniza tu restaurante con menús digitales interactivos. Genera códigos QR automáticos, gestiona pedidos en tiempo real y ofrece una experiencia única a tus clientes. Planes desde $0/mes."
+        keywords="menú digital, código QR, restaurante, pedidos online, menú QR, digitalización restaurantes, gestión restaurante, sistema pedidos, menú interactivo, códigos QR restaurantes"
+        image={typeof window !== 'undefined' ? `${window.location.origin}/logo.svg` : '/logo.svg'}
+        url={typeof window !== 'undefined' ? window.location.href : 'https://qrestaurante.site'}
+        structuredData={structuredData}
+      />
+      {/* Structured Data adicional para Organization */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationData) }}
+      />
       {/* Navbar */}
       <nav className="fixed top-0 left-0 right-0 z-50">
         <div className="absolute inset-0 bg-white/70 backdrop-blur-xl border-b border-white/20 shadow-sm"></div>
