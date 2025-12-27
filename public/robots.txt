@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /login
+Disallow: /register
+
+# Sitemap
+Sitemap: https://qrestaurante.site/sitemap.xml
+
+# Crawl-delay (opcional, en segundos)
+Crawl-delay: 1
