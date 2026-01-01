@@ -8,7 +8,7 @@ interface SEOProps {
   url?: string;
   type?: string;
   siteName?: string;
-  structuredData?: object;
+  structuredData?: object | null;
   noindex?: boolean;
   canonical?: string;
 }
